@@ -1,19 +1,10 @@
-import React from 'react'
-import ListItem from './ListItem'
-import { User } from '../interfaces'
+import { Box } from '@mui/material';
+import { ReactNode } from 'react';
 
 type Props = {
-  items: User[]
-}
+  children: ReactNode;
+};
 
-const List = ({ items }: Props) => (
-  <ul>
-    {items.map((item) => (
-      <li key={item.id}>
-        <ListItem data={item} />
-      </li>
-    ))}
-  </ul>
-)
+const List = ({ children }: Props) => <Box>{children}</Box>;
 
-export default List
+export default List;

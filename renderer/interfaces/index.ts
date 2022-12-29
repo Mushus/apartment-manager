@@ -4,18 +4,18 @@
 //
 // import User from 'path/to/interfaces';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { IpcRenderer } from 'electron'
+import { ProcedureCallOptions } from '@trpc/server/dist/core/internals/procedureBuilder';
+import { IpcRenderer } from 'electron';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace NodeJS {
     interface Global {
-      ipcRenderer: IpcRenderer
+      ipcRenderer: IpcRenderer;
     }
   }
-}
 
-export type User = {
-  id: number
-  name: string
+  interface Window {
+    trpc: (req: ProcedureCallOptions) => Promise<unknown>;
+  }
 }

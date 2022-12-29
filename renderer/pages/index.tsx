@@ -1,32 +1,36 @@
-import { useEffect } from 'react'
-import Link from 'next/link'
-import Layout from '../components/Layout'
+import Link from 'next/link';
+import Layout from '@/components/Layout';
+import { Container } from '@mui/system';
+import { Box, Typography } from '@mui/material';
 
-const IndexPage = () => {
-  useEffect(() => {
-    const handleMessage = (_event, args) => alert(args)
-
-    // add a listener to 'message' channel
-    global.ipcRenderer.addListener('message', handleMessage)
-
-    return () => {
-      global.ipcRenderer.removeListener('message', handleMessage)
-    }
-  }, [])
-
-  const onSayHiClick = () => {
-    global.ipcRenderer.send('message', 'hi from next')
-  }
-
+function Index() {
   return (
-    <Layout title="Home | Next.js + TypeScript + Electron Example">
-      <h1>Hello Next.js 👋</h1>
-      <button onClick={onSayHiClick}>Say hi to electron</button>
-      <p>
-        <Link href="/about">About</Link>
-      </p>
-    </Layout>
-  )
+    <Container>
+      <Typography variant="h6" mt="32px">
+        入居者管理
+      </Typography>
+      <Box my="16px">
+        <Box my="8px">
+          <Link href="/room">部屋状況</Link>
+        </Box>
+        <Box my="8px">
+          <Link href="/invoice">レシート発行</Link>
+        </Box>
+      </Box>
+      <Typography variant="h6" mt="32px">
+        マスタ管理
+      </Typography>
+      <Box my="16px">
+        <Box my="8px">
+          <Link href="/apartment">アパート管理</Link>
+        </Box>
+      </Box>
+    </Container>
+  );
 }
 
-export default IndexPage
+Index.getLayout = (page: JSX.Element): JSX.Element => {
+  return <Layout>{page}</Layout>;
+};
+
+export default Index;
