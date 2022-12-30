@@ -13,21 +13,21 @@ type Props = {
   tenant: Tenant;
 };
 
+const queryInput = z.object({
+  roomId: z.string(),
+  tenantId: z.string(),
+});
+
 export default function EditPage() {
   const router = useRouter();
-  const { id, tid } = z
-    .object({
-      id: z.string(),
-      tid: z.string(),
-    })
-    .parse(router.query);
+  const query = queryInput.parse(router.query);
 
-  const tenant = nextClient.getTennant.useQuery({ tenantId: tid, roomId: id });
+  const tenant = nextClient.tenant.get.useQuery(query);
 
   const handleSubmit = async (data: TenantEditable) => {
     const roomId = tenant.data?.roomId as string; // 常に存在する
     const tenantId = tenant.data?.id as string; // 常に存在する
-    await client.editTenant.mutate({
+    await client.tenant.update.mutate({
       ...data,
       id: tenantId,
     });
@@ -35,19 +35,13 @@ export default function EditPage() {
   };
 
   return tenant.data ? (
-    <TenantEdit
-      apartment={tenant.data.room.apartment}
-      room={tenant.data.room}
-      tenant={tenant.data}
-      onSave={handleSubmit}
-    />
+    <Layout title="部屋の入居者変種" prev={`/room/detail/${tenant.data.room.id}`}>
+      <TenantEdit
+        apartment={tenant.data.room.apartment}
+        room={tenant.data.room}
+        tenant={tenant.data}
+        onSave={handleSubmit}
+      />
+    </Layout>
   ) : undefined;
 }
-
-EditPage.getLayout = (page: JSX.Element, { room }: Props): JSX.Element => {
-  return (
-    <Layout title="部屋の入居者変種" prev={`/room/detail/${room.id}`}>
-      {page}
-    </Layout>
-  );
-};

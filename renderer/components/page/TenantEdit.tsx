@@ -1,14 +1,15 @@
-import { client } from '@/trpc/client';
+import { client } from '@/trpc';
 import { Button, Typography } from '@mui/material';
-import { Box, Container } from '@mui/system';
+import { Box } from '@mui/material';
 import { useRouter } from 'next/router';
 import { FormEventHandler, useState } from 'react';
-import FloatingControls from '../FloatingControls';
-import MyDatePicker from '../form/DatePicker';
-import MyTextField from '../form/TextField';
-import FormGroup from '../FromGroup';
-import { usePrompt } from '../Prompt';
+import FloatingControls from '@/components/FloatingControls';
+import MyDatePicker from '@/components/form/DatePicker';
+import MyTextField from '@/components/form/TextField';
+import FormGroup from '@/components/FromGroup';
+import { usePrompt } from '@/components/Prompt';
 import SaveIcon from '@mui/icons-material/Save';
+import Container from '@/components/Container';
 
 export type TenantEditable = {
   name: string;
@@ -52,12 +53,12 @@ const TenantEdit = ({ apartment, room, tenant, onSave }: Props) => {
   };
 
   const handleDelete = async () => {
-    const id = tenant?.id;
-    if (id === undefined) {
+    const tenantId = tenant?.id;
+    if (tenantId === undefined) {
       return;
     }
     if (await deletePrompt()) {
-      await client.deleteTenant.mutate({ id });
+      await client.tenant.delete.mutate({ tenantId });
       router.push(`/room/${room.id}/detail`);
     }
   };

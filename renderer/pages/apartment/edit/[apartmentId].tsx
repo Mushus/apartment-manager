@@ -1,4 +1,4 @@
-import { ChangeEventHandler, Dispatch, FormEventHandler, useCallback, useMemo, useState } from 'react';
+import { ChangeEventHandler, Dispatch, FormEventHandler, useCallback, useState } from 'react';
 import { arrayMoveImmutable } from 'array-move';
 import { SortableContainer, SortableElement, SortEndHandler } from 'react-sortable-hoc';
 import z from 'zod';
@@ -7,13 +7,14 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import { client, nextClient } from '@/trpc';
 import { usePrompt } from '@/components/Prompt';
-import { Box, Button, Container, Input } from '@mui/material';
+import { Box, Button, Input } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import MyTextField from '@/components/form/TextField';
 import FormGroup from '@/components/FromGroup';
 import { SetStateAction } from 'react';
 import FloatingControls from '@/components/FloatingControls';
 import { Apartment, Room as ORoom } from '@prisma/client';
+import Container from '@/components/Container';
 
 type Room = Omit<ORoom, 'id' | 'apartmentId'> & { id: ORoom['id'] | null; key: string };
 
@@ -38,12 +39,7 @@ type RoomElementProps = {
 };
 
 const useObjectState = <T, K extends keyof T>(setState: Dispatch<SetStateAction<T>>, key: K) => {
-  return useCallback(
-    (value: T[K]) => {
-      setState((a) => ({ ...a, [key]: value }));
-    },
-    [setState],
-  );
+  return useCallback((value: T[K]) => setState((a) => ({ ...a, [key]: value })), [setState]);
 };
 
 const Edit = ({ apartment: defaultApartment, rooms: defaultRooms }: Props) => {
@@ -75,7 +71,7 @@ const Edit = ({ apartment: defaultApartment, rooms: defaultRooms }: Props) => {
     (e) => {
       e.preventDefault();
       (async () => {
-        await client.updateApartments.mutate({ ...apartment, rooms });
+        await client.apartment.update.mutate({ ...apartment, rooms });
         router.push('/apartment');
       })();
     },
@@ -86,7 +82,7 @@ const Edit = ({ apartment: defaultApartment, rooms: defaultRooms }: Props) => {
 
   const handleDelete = useCallback(async () => {
     if (await deletePrompt()) {
-      await client.deleteApartment.mutate({ id: apartment.id });
+      await client.apartment.delete.mutate({ apartmentId: apartment.id });
       router.push('/apartment');
     }
   }, [apartment.id]);
@@ -109,29 +105,31 @@ const Edit = ({ apartment: defaultApartment, rooms: defaultRooms }: Props) => {
   );
 
   return (
-    <Container>
-      <form onSubmit={handleSubmit}>
-        <FormGroup label="名前">
-          <MyTextField value={apartment.name} onChange={handleChangeName} />
-        </FormGroup>
-        <Box mb="8">
-          <RoomsContainer
-            rooms={rooms}
-            onSortEnd={handleSort}
-            onUpdateRoom={handleUpdateRoom}
-            onDeleteRoom={handleRemoveRoom}
-          />
-          <Button onClick={handleAddRoom}>部屋追加</Button>
-        </Box>
-        <Button onClick={handleDelete}>削除</Button>
-        <FloatingControls>
-          <Button variant="contained" type="submit" endIcon={<SaveIcon />}>
-            保存
-          </Button>
-        </FloatingControls>
-      </form>
-      {deletePromptComponent}
-    </Container>
+    <Layout title="アパート編集" prev="/apartment">
+      <Container>
+        <form onSubmit={handleSubmit}>
+          <FormGroup label="名前">
+            <MyTextField value={apartment.name} onChange={handleChangeName} />
+          </FormGroup>
+          <Box mb="8">
+            <RoomsContainer
+              rooms={rooms}
+              onSortEnd={handleSort}
+              onUpdateRoom={handleUpdateRoom}
+              onDeleteRoom={handleRemoveRoom}
+            />
+            <Button onClick={handleAddRoom}>部屋追加</Button>
+          </Box>
+          <Button onClick={handleDelete}>削除</Button>
+          <FloatingControls>
+            <Button variant="contained" type="submit" endIcon={<SaveIcon />}>
+              保存
+            </Button>
+          </FloatingControls>
+        </form>
+        {deletePromptComponent}
+      </Container>
+    </Layout>
   );
 };
 
@@ -174,18 +172,12 @@ const RoomElement = SortableElement<RoomElementProps>(({ room, onUpdateRoom, onD
   );
 });
 
+const queryInput = z.object({ apartmentId: z.string() });
+
 export default function EditPage() {
   const router = useRouter();
-  const query = z.object({ id: z.string() }).parse(router.query);
-  const apartment = nextClient.getApartment.useQuery(query);
+  const query = queryInput.parse(router.query);
+  const apartment = nextClient.apartment.get.useQuery(query);
   const rooms = apartment.data?.rooms.map((r) => ({ ...r, key: uniqueId('room-server') }));
   return apartment.data && rooms ? <Edit apartment={apartment.data} rooms={rooms} /> : undefined;
 }
-
-EditPage.getLayout = (page: JSX.Element): JSX.Element => {
-  return (
-    <Layout title="アパート編集" prev="/apartment">
-      {page}
-    </Layout>
-  );
-};

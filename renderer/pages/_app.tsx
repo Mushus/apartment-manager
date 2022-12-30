@@ -1,12 +1,17 @@
-// import '../styles/globals.css';
+import '../styles/globals.scss';
 import '@fontsource/roboto/500.css';
 import type { AppProps } from 'next/app';
 import { nextClient } from '@/trpc';
+import { NoSsr } from '@mui/material';
 
 function App({ Component, pageProps }: AppProps) {
-  const getLayout = (Component as any).getLayout || ((page: any) => page);
+  const Layout = (Component as any).getLayout || ((page: any) => page);
 
-  return getLayout(<Component {...pageProps} />, pageProps);
+  return (
+    <NoSsr>
+      <Component {...pageProps} />
+    </NoSsr>
+  );
 }
 
 export default nextClient.withTRPC(App);

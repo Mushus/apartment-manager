@@ -1,0 +1,170 @@
+.pages {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  background-color: #eee;
+  padding: 30px;
+  @media print{
+    display: initial;
+    flex-direction: initial;
+    gap: initial;
+    background-color: initial;
+    padding: initial;
+  }
+}
+
+.page {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  width: 210mm;
+  height: 297mm;
+  font-family: "游ゴシック Medium", "Yu Gothic Medium", "游ゴシック体", YuGothic, sans-serif;
+  font-size: 3.5mm;
+  font-weight: normal;
+  -webkit-print-color-adjust: exact;
+  @media print{
+    background-color: initial;
+    border: initial;
+  }
+}
+
+.unPrint {
+  @media print{
+    display: none;
+  }
+}
+
+.paper {
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+  page-break-after: always;
+  height: 297mm;
+  width: 210mm;
+}
+
+.paper > section {
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(100% / 3);
+  padding: 15mm 30mm;
+}
+
+.paper > section:not(:last-child) {
+  border-bottom: 1px dashed black;
+}
+
+.paper > .receipt {
+  display: grid;
+  grid-template: 'header     header   ' 10mm
+                  'tenantName publishAt' 10mm
+                  'table      table    ' auto
+                  'admin      admin    ' auto
+                  /auto       auto;
+}
+
+.paper > .certificate {
+  display: grid;
+  grid-template: 'header     header   ' 10mm
+                  'tenantName publishAt' 10mm
+                  'charge     charge   ' auto
+                  'admin      admin    ' auto
+                  /auto       auto;
+}
+
+.publishAt {
+  text-align: right;
+}
+
+.chargeTable {
+  width: auto;
+  border-collapse: collapse;
+  border: 1px solid #000;
+}
+
+.chargeTable th {
+  font-weight: bold;
+}
+
+.chargeTable thead {
+  border-bottom: 1px solid #000;
+}
+
+.chargeTable tbody {
+  border-bottom: 1px dotted #000;
+}
+
+.chargeTable td:not(:last-child),
+.chargeTable th:not(:last-child) {
+  border-right: 1px dotted #000;
+}
+
+.chargeTable th,
+.chargeTable td {
+  padding: 0.2mm 5mm;
+}
+
+.receipt .charge {
+  text-align: right;
+}
+
+.certificate .charge {
+  text-align: center;
+  font-size: 4mm;
+}
+
+.certificate .charge strong {
+  font-size: 5mm;
+  font-weight: bold;
+}
+
+.admin {
+  margin-top: 2mm;
+  text-align: right;
+}
+
+.paper > section > h1 {
+  margin: 0;
+  font-size: 6mm;
+  text-align: center;
+}
+
+.paper > section > .tenant-name {
+  font-size: 4mm;
+}
+
+.GaTenantName{ 
+  grid-area: tenantName;
+}
+
+.GaPublishAt{ 
+  grid-area: publishAt;
+}
+
+.GaTable{ 
+  grid-area: table;
+}
+
+.GaAdmin{ 
+  grid-area: admin;
+}
+
+.GaHeader{ 
+  grid-area: header;
+}
+
+.GaTenantName{ 
+  grid-area: tenantName;
+}
+
+.GaPublishAt{ 
+  grid-area: publishAt;
+}
+
+.GaCharge{ 
+  grid-area: charge;
+}
+
+.GaAdmin{ 
+  grid-area: admin;
+}

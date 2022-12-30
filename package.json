@@ -12,7 +12,6 @@
     "build": "npm run build-renderer && npm run build-electron",
     "pack-app": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
-    "pack-apps": "electron-builder --dir",
     "type-check": "tsc -p ./renderer/tsconfig.json && tsc -p ./electron-src/tsconfig.json"
   },
   "dependencies": {
@@ -28,6 +27,7 @@
     "@trpc/react-query": "^10.7.0",
     "@trpc/server": "^10.7.0",
     "array-move": "^4.0.0",
+    "classnames": "^2.3.2",
     "dayjs": "^1.11.7",
     "electron-is-dev": "^1.1.0",
     "electron-next": "^3.1.5",
@@ -52,6 +52,7 @@
     "next": "latest",
     "prettier": "^2.8.1",
     "rimraf": "^3.0.0",
+    "sass": "^1.57.1",
     "typescript": "^4.0.5"
   },
   "build": {
