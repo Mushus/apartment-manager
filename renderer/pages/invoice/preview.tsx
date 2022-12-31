@@ -6,6 +6,8 @@ import PrintIcon from '@mui/icons-material/Print';
 import { nextClient } from '@/trpc';
 import styles from '@/styles/Preview.module.scss';
 import classNames from 'classnames';
+import { configurePage } from '@/components/page/Page';
+import Loading from '@/components/page/Loading';
 
 type Apartment = {
   name: string;
@@ -45,7 +47,7 @@ const InvoiceComponent = ({ tenants }: Props) => {
 
   const sum = Number(rent) + Number(waterCharge) + Number(parkingFee) + Number(commonAreaCharge);
   return (
-    <Layout title="プレビュー" prev="/invoice">
+    <>
       <div className={styles.pages}>
         {tenants.map((tenant) => {
           const receipt = (
@@ -121,14 +123,25 @@ const InvoiceComponent = ({ tenants }: Props) => {
           印刷
         </Button>
       </Box>
-    </Layout>
+    </>
   );
 };
 
-export default function InvoicePage() {
-  const tenants = nextClient.tenant.listOccupying.useQuery({ year: 2022, month: 12 });
-  const defaultChecks = tenants.data ? Object.fromEntries(tenants.data.map((tenant) => [tenant.id, true])) : undefined;
-  return tenants.data && defaultChecks ? (
-    <InvoiceComponent tenants={tenants.data} defaultChecks={defaultChecks} />
-  ) : undefined;
-}
+export default configurePage({
+  layout: ({ children }) => (
+    <Layout title="プレビュー" prev="/invoice">
+      {children}
+    </Layout>
+  ),
+  page: () => {
+    const tenants = nextClient.tenant.listOccupying.useQuery({ year: 2022, month: 12 });
+    const defaultChecks = tenants.data
+      ? Object.fromEntries(tenants.data.map((tenant) => [tenant.id, true]))
+      : undefined;
+    return tenants.data && defaultChecks ? (
+      <InvoiceComponent tenants={tenants.data} defaultChecks={defaultChecks} />
+    ) : (
+      <Loading />
+    );
+  },
+});

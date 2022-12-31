@@ -6,7 +6,7 @@ type Props = {
 };
 
 const Container = ({ children }: Props) => (
-  <MContainer>
+  <MContainer style={{ overflow: 'hidden' }}>
     <Box my="32px">{children}</Box>
   </MContainer>
 );

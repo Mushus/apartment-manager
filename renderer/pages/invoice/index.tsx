@@ -1,14 +1,15 @@
 import { Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import Layout from '@/components/Layout';
 import { Apartment } from '@mui/icons-material';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Box } from '@mui/material';
 import PrintIcon from '@mui/icons-material/Print';
 import { mapValues } from 'lodash';
-import { client, nextClient } from '@/trpc';
-import { useRouter } from 'next/router';
+import { nextClient } from '@/trpc';
 import ButtonLink from '@/components/ButtonLink';
 import Container from '@/components/Container';
+import { configurePage } from '@/components/page/Page';
+import Loading from '@/components/page/Loading';
 
 type Apartment = {
   name: string;
@@ -53,50 +54,57 @@ const InvoiceComponent = ({ tenants, defaultChecks }: Props) => {
   };
 
   return (
-    <Layout title="レシート発行" prev="/">
-      <Container>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
+    <Container>
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell padding="checkbox">
+                <Checkbox checked={allCheck} indeterminate={someCheck} onChange={handleChange} />
+              </TableCell>
+              <TableCell>アパート</TableCell>
+              <TableCell>部屋</TableCell>
+              <TableCell>契約者</TableCell>
+              <TableCell align="right">操作</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {tenants.map((tenant) => (
+              <TableRow key={tenant.id}>
                 <TableCell padding="checkbox">
-                  <Checkbox checked={allCheck} indeterminate={someCheck} onChange={handleChange} />
+                  <Checkbox checked={getCheck(tenant.id)} onChange={() => setCheck(tenant.id)} />
                 </TableCell>
-                <TableCell>アパート</TableCell>
-                <TableCell>部屋</TableCell>
-                <TableCell>契約者</TableCell>
-                <TableCell align="right">操作</TableCell>
+                <TableCell>{tenant.room.apartment.name}</TableCell>
+                <TableCell>{tenant.room.name}</TableCell>
+                <TableCell>{tenant.name}</TableCell>
+                <TableCell align="right"></TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {tenants.map((tenant) => (
-                <TableRow key={tenant.id}>
-                  <TableCell padding="checkbox">
-                    <Checkbox checked={getCheck(tenant.id)} onChange={() => setCheck(tenant.id)} />
-                  </TableCell>
-                  <TableCell>{tenant.room.apartment.name}</TableCell>
-                  <TableCell>{tenant.room.name}</TableCell>
-                  <TableCell>{tenant.name}</TableCell>
-                  <TableCell align="right"></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <Box position="fixed" bottom="16px" right="16px">
-          <ButtonLink variant="contained" endIcon={<PrintIcon />} href="/invoice/preview">
-            印刷
-          </ButtonLink>
-        </Box>
-      </Container>
-    </Layout>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <Box position="fixed" bottom="16px" right="16px">
+        <ButtonLink variant="contained" endIcon={<PrintIcon />} href="/invoice/preview">
+          印刷
+        </ButtonLink>
+      </Box>
+    </Container>
   );
 };
 
-export default function InvoicePage() {
-  const tenants = nextClient.tenant.listOccupying.useQuery({ year: 2022, month: 12 });
-  const defaultChecks = tenants.data ? Object.fromEntries(tenants.data.map((tenant) => [tenant.id, true])) : undefined;
-  return tenants.data && defaultChecks ? (
-    <InvoiceComponent tenants={tenants.data} defaultChecks={defaultChecks} />
-  ) : undefined;
-}
+export default configurePage({
+  layout: ({ children }) => (
+    <Layout title="レシート発行" prev="/">
+      {children}
+    </Layout>
+  ),
+  page: () => {
+    const { data: tenants } = nextClient.tenant.listOccupying.useQuery({ year: 2022, month: 12 });
+    const defaultChecks = tenants ? Object.fromEntries(tenants.map((tenant) => [tenant.id, true])) : undefined;
+    return tenants && defaultChecks ? (
+      <InvoiceComponent tenants={tenants} defaultChecks={defaultChecks} />
+    ) : (
+      <Loading />
+    );
+  },
+});

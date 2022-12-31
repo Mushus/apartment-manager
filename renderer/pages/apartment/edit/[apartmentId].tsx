@@ -15,6 +15,8 @@ import { SetStateAction } from 'react';
 import FloatingControls from '@/components/FloatingControls';
 import { Apartment, Room as ORoom } from '@prisma/client';
 import Container from '@/components/Container';
+import { configurePage } from '@/components/page/Page';
+import Loading from '@/components/page/Loading';
 
 type Room = Omit<ORoom, 'id' | 'apartmentId'> & { id: ORoom['id'] | null; key: string };
 
@@ -78,10 +80,10 @@ const Edit = ({ apartment: defaultApartment, rooms: defaultRooms }: Props) => {
     [rooms, apartment],
   );
 
-  const [deletePrompt, deletePromptComponent] = usePrompt({ text: 'マンションを削除してよろしいですか？' });
+  const [prompt, promptComponent] = usePrompt();
 
   const handleDelete = useCallback(async () => {
-    if (await deletePrompt()) {
+    if (await prompt({ text: 'マンションを削除してよろしいですか？' })) {
       await client.apartment.delete.mutate({ apartmentId: apartment.id });
       router.push('/apartment');
     }
@@ -105,31 +107,29 @@ const Edit = ({ apartment: defaultApartment, rooms: defaultRooms }: Props) => {
   );
 
   return (
-    <Layout title="アパート編集" prev="/apartment">
-      <Container>
-        <form onSubmit={handleSubmit}>
-          <FormGroup label="名前">
-            <MyTextField value={apartment.name} onChange={handleChangeName} />
-          </FormGroup>
-          <Box mb="8">
-            <RoomsContainer
-              rooms={rooms}
-              onSortEnd={handleSort}
-              onUpdateRoom={handleUpdateRoom}
-              onDeleteRoom={handleRemoveRoom}
-            />
-            <Button onClick={handleAddRoom}>部屋追加</Button>
-          </Box>
-          <Button onClick={handleDelete}>削除</Button>
-          <FloatingControls>
-            <Button variant="contained" type="submit" endIcon={<SaveIcon />}>
-              保存
-            </Button>
-          </FloatingControls>
-        </form>
-        {deletePromptComponent}
-      </Container>
-    </Layout>
+    <Container>
+      <form onSubmit={handleSubmit}>
+        <FormGroup label="名前">
+          <MyTextField value={apartment.name} onChange={handleChangeName} />
+        </FormGroup>
+        <Box mb="8">
+          <RoomsContainer
+            rooms={rooms}
+            onSortEnd={handleSort}
+            onUpdateRoom={handleUpdateRoom}
+            onDeleteRoom={handleRemoveRoom}
+          />
+          <Button onClick={handleAddRoom}>部屋追加</Button>
+        </Box>
+        <Button onClick={handleDelete}>削除</Button>
+        <FloatingControls>
+          <Button variant="contained" type="submit" endIcon={<SaveIcon />}>
+            保存
+          </Button>
+        </FloatingControls>
+      </form>
+      {promptComponent}
+    </Container>
   );
 };
 
@@ -172,12 +172,16 @@ const RoomElement = SortableElement<RoomElementProps>(({ room, onUpdateRoom, onD
   );
 });
 
-const queryInput = z.object({ apartmentId: z.string() });
-
-export default function EditPage() {
-  const router = useRouter();
-  const query = queryInput.parse(router.query);
-  const apartment = nextClient.apartment.get.useQuery(query);
-  const rooms = apartment.data?.rooms.map((r) => ({ ...r, key: uniqueId('room-server') }));
-  return apartment.data && rooms ? <Edit apartment={apartment.data} rooms={rooms} /> : undefined;
-}
+export default configurePage({
+  query: z.object({ apartmentId: z.string() }),
+  layout: ({ children }) => (
+    <Layout title="アパート編集" prev="/apartment">
+      {children}
+    </Layout>
+  ),
+  page: ({ query }) => {
+    const { data: apartment } = query && nextClient.apartment.get.useQuery(query);
+    const rooms = apartment?.rooms.map((r) => ({ ...r, key: uniqueId('room-server') }));
+    return apartment && rooms ? <Edit apartment={apartment} rooms={rooms} /> : <Loading />;
+  },
+});

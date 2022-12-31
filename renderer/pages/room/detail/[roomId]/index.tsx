@@ -11,6 +11,9 @@ import FormGroup from '@/components/FromGroup';
 import dayjs from 'dayjs';
 import { Tenant } from '@/types';
 import Container from '@/components/Container';
+import Section from '@/components/Section';
+import Loading from '@/components/page/Loading';
+import { configurePage } from '@/components/page/Page';
 
 type Props = {
   apartment: Apartment;
@@ -25,56 +28,56 @@ const date = (date: string | Date | null) => {
 
 function Detail({ apartment, room, tenants }: Props) {
   return (
-    <Layout title="部屋の入居状況" prev="/room">
-      <Container>
-        <Box my="32px">
-          <Typography variant="h6">
-            {apartment.name} / {room.name}
-          </Typography>
-        </Box>
-        <FormGroup label="入居状況">
-          <MyTextField value="入居中" disabled />
-        </FormGroup>
-        <FormGroup label="入居者">
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>氏名</TableCell>
-                  <TableCell>入居日</TableCell>
-                  <TableCell>退去日</TableCell>
-                  <TableCell>操作</TableCell>
+    <Container>
+      <Box my="32px">
+        <Typography variant="h6">
+          {apartment.name} / {room.name}
+        </Typography>
+      </Box>
+      <FormGroup label="入居状況">
+        <MyTextField value="入居中" disabled />
+      </FormGroup>
+      <Section title="入居者">
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>氏名</TableCell>
+                <TableCell>入居日</TableCell>
+                <TableCell>退去日</TableCell>
+                <TableCell>操作</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {tenants.map((tenant) => (
+                <TableRow key={tenant.id}>
+                  <TableCell>{tenant.name}</TableCell>
+                  <TableCell>{date(tenant.since)}</TableCell>
+                  <TableCell>{date(tenant.until)}</TableCell>
+                  <TableCell align="right">
+                    <ButtonLink href={`/room/detail/${room.id}/edit/${tenant.id}`}>編集</ButtonLink>
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {tenants.map((tenant) => (
-                  <TableRow key={tenant.id}>
-                    <TableCell>{tenant.name}</TableCell>
-                    <TableCell>{date(tenant.since)}</TableCell>
-                    <TableCell>{date(tenant.until)}</TableCell>
-                    <TableCell align="right">
-                      <ButtonLink href={`/room/detail/${room.id}/edit/${tenant.id}`}>編集</ButtonLink>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </FormGroup>
-        <ButtonLink href={`/room/detail/${room.id}/new`}>入居者追加</ButtonLink>
-      </Container>
-    </Layout>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Section>
+      <ButtonLink href={`/room/detail/${room.id}/new`}>入居者追加</ButtonLink>
+    </Container>
   );
 }
-const queryInput = z.object({
-  roomId: z.string(),
+export default configurePage({
+  query: z.object({
+    roomId: z.string(),
+  }),
+  layout: ({ children }) => (
+    <Layout title="部屋の入居状況" prev="/room">
+      {children}
+    </Layout>
+  ),
+  page: ({ query }) => {
+    const { data: room } = nextClient.room.get.useQuery(query);
+    return room ? <Detail room={room} apartment={room.apartment} tenants={room.tenants} /> : <Loading />;
+  },
 });
-
-export default function DetailPage() {
-  const router = useRouter();
-  const query = queryInput.parse(router.query);
-  const room = nextClient.room.get.useQuery(query);
-  return room.data ? (
-    <Detail room={room.data} apartment={room.data.apartment} tenants={room.data.tenants} />
-  ) : undefined;
-}
