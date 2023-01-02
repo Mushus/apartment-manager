@@ -3,7 +3,7 @@ import { createTRPCNext } from '@trpc/next';
 import { AppRouter } from '../electron-src/trpc';
 import { AnyRouter } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
-// import { TRPCResponse } from '@trpc/server/rpc';
+import superjson from 'superjson';
 
 const ipcLink = <TRouter extends AnyRouter>(): TRPCLink<TRouter> => {
   return (runtime): OperationLink<TRouter> => {
@@ -31,6 +31,7 @@ export const nextClient = createTRPCNext<AppRouter>({
   config({ ctx }) {
     return {
       links: [ipcLink()],
+      transformer: superjson,
     };
   },
   ssr: false,
@@ -38,4 +39,5 @@ export const nextClient = createTRPCNext<AppRouter>({
 
 export const client = createTRPCProxyClient<AppRouter>({
   links: [ipcLink()],
+  transformer: superjson,
 });

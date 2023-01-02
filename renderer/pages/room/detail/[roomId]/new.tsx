@@ -2,7 +2,7 @@ import Layout from '@/components/Layout';
 import z from 'zod';
 import { client, nextClient } from '@/trpc';
 import { useRouter } from 'next/router';
-import TenantEdit, { TenantEditable } from '@/components/page/TenantEdit';
+import TenantEdit, { ExternalTenant } from '@/components/page/TenantEdit';
 import { configurePage } from '@/components/page/Page';
 import Loading from '@/components/page/Loading';
 
@@ -15,9 +15,9 @@ export default configurePage({
   ),
   page: ({ query }) => {
     const router = useRouter();
-    const { data: room } = nextClient.room.get.useQuery(query);
+    const { data: room, isLoading } = nextClient.room.get.useQuery(query);
 
-    const handleSubmit = async (tenant: TenantEditable) => {
+    const handleSubmit = async (tenant: ExternalTenant) => {
       const { roomId } = query;
       await client.tenant.create.mutate({
         ...tenant,
@@ -26,6 +26,10 @@ export default configurePage({
       router.push(`/room/detail/${roomId}`);
     };
 
-    return room ? <TenantEdit apartment={room.apartment} room={room} onSave={handleSubmit} /> : <Loading />;
+    return room && !isLoading ? (
+      <TenantEdit apartment={room.apartment} room={room} onSave={handleSubmit} />
+    ) : (
+      <Loading />
+    );
   },
 });

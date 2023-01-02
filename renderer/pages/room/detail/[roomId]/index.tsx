@@ -1,19 +1,18 @@
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import Layout from '@/components/Layout';
 import z from 'zod';
-import type { Apartment, Room } from '@prisma/client';
+import type { Apartment, Room, Tenant } from '@prisma/client';
 import { Box } from '@mui/material';
 import ButtonLink from '@/components/ButtonLink';
-import { nextClient } from '@/trpc';
-import { useRouter } from 'next/router';
-import MyTextField from '@/components/form/TextField';
+import { client, nextClient } from '@/trpc';
+import TextField from '@/components/form/TextField';
 import FormGroup from '@/components/FromGroup';
 import dayjs from 'dayjs';
-import { Tenant } from '@/types';
 import Container from '@/components/Container';
 import Section from '@/components/Section';
 import Loading from '@/components/page/Loading';
 import { configurePage } from '@/components/page/Page';
+import { usePrompt } from '@/components/Prompt';
 
 type Props = {
   apartment: Apartment;
@@ -27,6 +26,17 @@ const date = (date: string | Date | null) => {
 };
 
 function Detail({ apartment, room, tenants }: Props) {
+  const util = nextClient.useContext();
+
+  const [prompt, promptComponent] = usePrompt();
+
+  const handleDelete = async (tenant: Tenant) => {
+    if (await prompt({ text: `部屋「${tenant.name}」を削除しますか？` })) {
+      await client.tenant.delete.mutate({ tenantId: tenant.id });
+      util.invalidate();
+    }
+  };
+
   return (
     <Container>
       <Box my="32px">
@@ -35,7 +45,7 @@ function Detail({ apartment, room, tenants }: Props) {
         </Typography>
       </Box>
       <FormGroup label="入居状況">
-        <MyTextField value="入居中" disabled />
+        <TextField value="入居中" disabled />
       </FormGroup>
       <Section title="入居者">
         <TableContainer>
@@ -55,6 +65,9 @@ function Detail({ apartment, room, tenants }: Props) {
                   <TableCell>{date(tenant.since)}</TableCell>
                   <TableCell>{date(tenant.until)}</TableCell>
                   <TableCell align="right">
+                    <Button variant="contained" color="warning" onClick={() => handleDelete(tenant)}>
+                      削除
+                    </Button>
                     <ButtonLink href={`/room/detail/${room.id}/edit/${tenant.id}`}>編集</ButtonLink>
                   </TableCell>
                 </TableRow>
@@ -64,6 +77,7 @@ function Detail({ apartment, room, tenants }: Props) {
         </TableContainer>
       </Section>
       <ButtonLink href={`/room/detail/${room.id}/new`}>入居者追加</ButtonLink>
+      {promptComponent}
     </Container>
   );
 }
@@ -77,7 +91,7 @@ export default configurePage({
     </Layout>
   ),
   page: ({ query }) => {
-    const { data: room } = nextClient.room.get.useQuery(query);
-    return room ? <Detail room={room} apartment={room.apartment} tenants={room.tenants} /> : <Loading />;
+    const { data: room, isLoading } = nextClient.room.get.useQuery(query);
+    return room && !isLoading ? <Detail room={room} apartment={room.apartment} tenants={room.tenants} /> : <Loading />;
   },
 });

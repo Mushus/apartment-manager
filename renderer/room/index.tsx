@@ -1,10 +1,8 @@
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import type { Apartment as OApartment, Room } from '@prisma/client';
 import Layout from '@/components/Layout';
 import ButtonLink from '@/components/ButtonLink';
 import { nextClient } from '@/trpc';
-import Container from '@/components/Container';
-import Section from '@/components/Section';
 import { configurePage } from '@/components/page/Page';
 import Loading from '@/components/page/Loading';
 
@@ -16,11 +14,12 @@ type Props = {
   apartments: Apartment[];
 };
 
-const RoomComponent = ({ apartments }: Props) => {
+const RoomPage = ({ apartments }: Props) => {
   return (
     <Container>
-      {apartments.map((apartment) => (
-        <Section title={apartment.name} key={apartment.id}>
+      {apartments.map((apartment, index) => (
+        <Box key={apartment.id}>
+          <Box>{apartment.name}</Box>
           <TableContainer>
             <Table>
               <TableHead>
@@ -43,7 +42,7 @@ const RoomComponent = ({ apartments }: Props) => {
               </TableBody>
             </Table>
           </TableContainer>
-        </Section>
+        </Box>
       ))}
     </Container>
   );
@@ -57,6 +56,6 @@ export default configurePage({
   ),
   page: () => {
     const { data: apartments, isLoading } = nextClient.apartment.list.useQuery();
-    return apartments && !isLoading ? <RoomComponent apartments={apartments} /> : <Loading />;
+    return apartments && !isLoading ? <RoomPage apartments={apartments} /> : <Loading />;
   },
 });

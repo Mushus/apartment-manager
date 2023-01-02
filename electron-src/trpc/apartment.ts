@@ -13,8 +13,16 @@ const createInput = z.object({
   rooms: z.array(
     z.object({
       name: z.string(),
+      rent: z.number().int().nullable(),
+      waterCharge: z.number().int().nullable(),
+      parkingFee: z.number().int().nullable(),
+      commonAreaCharge: z.number().int().nullable(),
     }),
   ),
+  rent: z.number().int().nullable(),
+  waterCharge: z.number().int().nullable(),
+  parkingFee: z.number().int().nullable(),
+  commonAreaCharge: z.number().int().nullable(),
 });
 
 const updateInput = z.object({
@@ -24,8 +32,16 @@ const updateInput = z.object({
     z.object({
       id: z.string().nullable(),
       name: z.string(),
+      rent: z.number().int().nullable(),
+      waterCharge: z.number().int().nullable(),
+      parkingFee: z.number().int().nullable(),
+      commonAreaCharge: z.number().int().nullable(),
     }),
   ),
+  rent: z.number().int().nullable(),
+  waterCharge: z.number().int().nullable(),
+  parkingFee: z.number().int().nullable(),
+  commonAreaCharge: z.number().int().nullable(),
 });
 
 const deleteInput = z.object({ apartmentId: z.string() });

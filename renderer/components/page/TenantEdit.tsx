@@ -1,74 +1,94 @@
-import { client } from '@/trpc';
 import { Button, Typography } from '@mui/material';
 import { Box } from '@mui/material';
-import { useRouter } from 'next/router';
-import { FormEventHandler, useState } from 'react';
+import { useMemo, useState } from 'react';
 import FloatingControls from '@/components/FloatingControls';
-import MyDatePicker from '@/components/form/DatePicker';
-import MyTextField from '@/components/form/TextField';
+import DatePicker from '@/components/form/DatePicker';
+import TextField from '@/components/form/TextField';
 import FormGroup from '@/components/FromGroup';
-import { usePrompt } from '@/components/Prompt';
 import SaveIcon from '@mui/icons-material/Save';
 import Container from '@/components/Container';
+import { useObjectState, useSubmit } from '@/hooks';
+import NumberTextField from '../form/NumberTextField';
+import { Apartment, Room, Tenant as PTenant } from '@prisma/client';
+import { dateToForm, formToDate, formToNum, numToForm } from '@/util';
+import dayjs from 'dayjs';
 
-export type TenantEditable = {
-  name: string;
+export type ExternalTenant = Omit<PTenant, 'id' | 'apartmentId' | 'roomId'> & {
+  id: PTenant['id'] | null;
+};
+
+type Tenant = Omit<
+  PTenant,
+  'id' | 'apartmentId' | 'roomId' | 'since' | 'until' | 'rent' | 'waterCharge' | 'parkingFee' | 'commonAreaCharge'
+> & {
+  id: PTenant['id'] | null;
   since: string | null;
   until: string | null;
-};
-
-type Apartment = {
-  name: string;
-};
-
-type Room = {
-  id: string;
-  name: string;
+  rent: string;
+  waterCharge: string;
+  parkingFee: string;
+  commonAreaCharge: string;
 };
 
 type Props = {
   apartment: Apartment;
   room: Room;
-  tenant?: {
-    id?: string;
-    name?: string;
-    since?: string | null;
-    until?: string | null;
-  };
-  onSave: (tenant: TenantEditable) => void;
+  tenant?: ExternalTenant;
+  onSave: (tenant: ExternalTenant) => void;
 };
 
-const TenantEdit = ({ apartment, room, tenant, onSave }: Props) => {
-  const router = useRouter();
-
-  const [deletePrompt, deletePromptComponent] = usePrompt({ text: '入居者の情報を削除してよろしいですか？' });
-
-  const handleSubmit: FormEventHandler<HTMLFormElement> = (e) => {
-    e.preventDefault();
-    onSave({
-      name,
-      since,
-      until,
-    });
-  };
-
-  const handleDelete = async () => {
-    const tenantId = tenant?.id;
-    if (tenantId === undefined) {
-      return;
+const TenantEdit = ({ apartment, room, tenant: originalTenant, onSave }: Props) => {
+  const defaultTenant: Tenant = useMemo(() => {
+    if (originalTenant) {
+      return {
+        ...originalTenant,
+        since: dateToForm(originalTenant.since),
+        until: dateToForm(originalTenant.until),
+        rent: numToForm(originalTenant.rent),
+        waterCharge: numToForm(originalTenant.waterCharge),
+        parkingFee: numToForm(originalTenant.parkingFee),
+        commonAreaCharge: numToForm(originalTenant.commonAreaCharge),
+      };
     }
-    if (await deletePrompt()) {
-      await client.tenant.delete.mutate({ tenantId });
-      router.push(`/room/${room.id}/detail`);
-    }
-  };
+    const now = dayjs();
+    return {
+      id: null,
+      name: '',
+      since: dateToForm(new Date(now.year(), now.month(), now.date())),
+      until: dateToForm(new Date(2100, 1, 1)),
+      rent: numToForm(room.rent ?? apartment.rent ?? null),
+      waterCharge: numToForm(room.waterCharge ?? apartment.waterCharge ?? null),
+      parkingFee: numToForm(room.parkingFee ?? apartment.parkingFee ?? null),
+      commonAreaCharge: numToForm(room.commonAreaCharge ?? apartment.commonAreaCharge ?? null),
+    };
+  }, [originalTenant, room, apartment]);
 
-  const [name, setName] = useState<string>(tenant?.name ?? '');
-  const [since, setSince] = useState<string | null>(tenant?.since ?? null);
-  const [until, setUntil] = useState<string | null>(tenant?.until ?? null);
+  const [tenant, setTenant] = useState<Tenant>(defaultTenant);
+
+  const handleChangeName = useObjectState(setTenant, 'name');
+  const handleChangeSince = useObjectState(setTenant, 'since');
+  const handleChangeUntil = useObjectState(setTenant, 'until');
+  const handleChangeRent = useObjectState(setTenant, 'rent');
+  const handleChangeWaterCharge = useObjectState(setTenant, 'waterCharge');
+  const handleChangeParkingFee = useObjectState(setTenant, 'parkingFee');
+  const handleChangeCommonAreaCharge = useObjectState(setTenant, 'commonAreaCharge');
+
+  const handleSubmit = useSubmit(
+    () =>
+      onSave({
+        ...tenant,
+        since: formToDate(tenant.since),
+        until: formToDate(tenant.until),
+        rent: formToNum(tenant.rent),
+        waterCharge: formToNum(tenant.waterCharge),
+        parkingFee: formToNum(tenant.parkingFee),
+        commonAreaCharge: formToNum(tenant.commonAreaCharge),
+      }),
+    [tenant],
+  );
 
   return (
-    <Container>
+    <Container mb="68px">
       <form onSubmit={handleSubmit}>
         <Box my="32px">
           <Typography variant="h6">
@@ -76,26 +96,32 @@ const TenantEdit = ({ apartment, room, tenant, onSave }: Props) => {
           </Typography>
         </Box>
         <FormGroup label="入居者名">
-          <MyTextField value={name} onChange={setName} />
+          <TextField value={tenant.name} onChange={handleChangeName} />
         </FormGroup>
         <FormGroup label="入居日">
-          <MyDatePicker value={since} onChange={setSince} />
+          <DatePicker value={tenant.since} onChange={handleChangeSince} />
         </FormGroup>
         <FormGroup label="退去日">
-          <MyDatePicker value={until} onChange={setUntil} />
+          <DatePicker value={tenant.until} onChange={handleChangeUntil} />
+        </FormGroup>
+        <FormGroup label="家賃(円)">
+          <NumberTextField value={tenant.rent} onChange={handleChangeRent} />
+        </FormGroup>
+        <FormGroup label="水道料金(円)">
+          <NumberTextField value={tenant.waterCharge} onChange={handleChangeWaterCharge} />
+        </FormGroup>
+        <FormGroup label="駐車場料金(円)">
+          <NumberTextField value={tenant.parkingFee} onChange={handleChangeParkingFee} />
+        </FormGroup>
+        <FormGroup label="共益費(円)">
+          <NumberTextField value={tenant.commonAreaCharge} onChange={handleChangeCommonAreaCharge} />
         </FormGroup>
         <FloatingControls>
           <Button variant="contained" type="submit" endIcon={<SaveIcon />}>
             保存
           </Button>
         </FloatingControls>
-        {tenant?.id && (
-          <Button variant="contained" onClick={handleDelete}>
-            削除
-          </Button>
-        )}
       </form>
-      {deletePromptComponent}
     </Container>
   );
 };

@@ -1,16 +1,16 @@
-import { TextField as MTextField, TextFieldProps } from '@mui/material';
+import { TextField, TextFieldProps } from '@mui/material';
 import { ChangeEventHandler } from 'react';
 
 type Props = Omit<TextFieldProps, 'onChange'> & {
   onChange?: (value: string) => void;
 };
 
-const TextField = ({ onChange, ...props }: Props) => {
+const NumberTextField = ({ onChange, ...props }: Props) => {
   const handleChange: ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> = (e) => {
     if (onChange) onChange(e.target.value);
   };
 
-  return <MTextField fullWidth onChange={handleChange} {...props} />;
+  return <TextField fullWidth inputMode="decimal" onChange={handleChange} {...props} />;
 };
 
-export default TextField;
+export default NumberTextField;

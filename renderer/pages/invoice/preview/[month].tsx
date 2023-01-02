@@ -1,6 +1,5 @@
 import { Button } from '@mui/material';
 import Layout from '@/components/Layout';
-import { Apartment } from '@mui/icons-material';
 import { Box } from '@mui/material';
 import PrintIcon from '@mui/icons-material/Print';
 import { nextClient } from '@/trpc';
@@ -8,20 +7,18 @@ import styles from '@/styles/Preview.module.scss';
 import classNames from 'classnames';
 import { configurePage } from '@/components/page/Page';
 import Loading from '@/components/page/Loading';
+import z from 'zod';
+import dayjs from 'dayjs';
+import { useMemo } from 'react';
+import { Tenant as PTenant, Invoice, Room as PRoom, Apartment } from '@prisma/client';
 
-type Apartment = {
-  name: string;
-};
-
-type Room = {
-  name: string;
+type Room = PRoom & {
   apartment: Apartment;
 };
 
-type Tenant = {
-  id: string;
+type Tenant = PTenant & {
   room: Room;
-  name: string;
+  invoices: Invoice[];
 };
 
 type Props = {
@@ -36,20 +33,23 @@ const InvoiceComponent = ({ tenants }: Props) => {
 
   const administrator = '管理人';
 
-  const year = '2022';
-  const month = '01';
-  const date = '01';
-
-  const rent = 1000;
-  const waterCharge = 1000;
-  const parkingFee = 2000;
-  const commonAreaCharge = 5000;
-
-  const sum = Number(rent) + Number(waterCharge) + Number(parkingFee) + Number(commonAreaCharge);
+  const now = useMemo(() => dayjs(), []);
+  const year = String(now.year());
+  const month = ('00' + (now.month() + 1)).slice(-2);
+  const date = ('00' + now.date()).slice(-2);
   return (
     <>
       <div className={styles.pages}>
         {tenants.map((tenant) => {
+          const room = tenant.room;
+          const apartment = room.apartment;
+          const invoice = tenant.invoices?.[0];
+          const rent = room.rent ?? apartment.rent ?? 0;
+          const waterCharge = invoice.waterCharge ?? room.waterCharge ?? apartment.waterCharge ?? 0;
+          const parkingFee = room.parkingFee ?? room.parkingFee ?? apartment.parkingFee ?? 0;
+          const commonAreaCharge = room.commonAreaCharge ?? room.commonAreaCharge ?? apartment.commonAreaCharge ?? 0;
+
+          const sum = Number(rent) + Number(waterCharge) + Number(parkingFee) + Number(commonAreaCharge);
           const receipt = (
             <>
               <div className={classNames(styles.tenantName, styles.GaTanantName)}>{tenant.name} 様</div>
@@ -102,7 +102,7 @@ const InvoiceComponent = ({ tenants }: Props) => {
                   <h1 className={classNames(styles.header, styles.GaHeader)}>入金証</h1>
                   <div className={classNames(styles.tenantName, styles.GaTenantName)}>{tenant.name} 様</div>
                   <div className={classNames(styles.publishAt, styles.GaPublishAt)}>
-                    発行日: 　　　　 年 　　 月 　　 日
+                    発行日: {year} 年 {month} 月 {date} 日
                   </div>
                   <div className={classNames(styles.charge, styles.charge)}>
                     金額 <strong>{sum.toLocaleString()} 円</strong> を頂きました。
@@ -128,18 +128,21 @@ const InvoiceComponent = ({ tenants }: Props) => {
 };
 
 export default configurePage({
+  query: z.object({ month: z.string() }),
   layout: ({ children }) => (
     <Layout title="プレビュー" prev="/invoice">
       {children}
     </Layout>
   ),
-  page: () => {
-    const tenants = nextClient.tenant.listOccupying.useQuery({ year: 2022, month: 12 });
-    const defaultChecks = tenants.data
-      ? Object.fromEntries(tenants.data.map((tenant) => [tenant.id, true]))
-      : undefined;
-    return tenants.data && defaultChecks ? (
-      <InvoiceComponent tenants={tenants.data} defaultChecks={defaultChecks} />
+  page: ({ query }) => {
+    const params = useMemo(() => {
+      const date = dayjs(query.month);
+      return { year: date.year(), month: date.month() + 1 };
+    }, []);
+    const { data: tenants, isLoading } = nextClient.tenant.listOccupying.useQuery(params);
+    const defaultChecks = tenants ? Object.fromEntries(tenants.map((tenant) => [tenant.id, true])) : undefined;
+    return tenants && defaultChecks && !isLoading ? (
+      <InvoiceComponent tenants={tenants} defaultChecks={defaultChecks} />
     ) : (
       <Loading />
     );

@@ -11,30 +11,53 @@ datasource db {
 }
 
 model Apartment {
-  id    String @id
-  name  String
-  rooms Room[]
+  id               String @id
+  name             String
+  rent             Int?
+  waterCharge      Int?
+  parkingFee       Int?
+  commonAreaCharge Int?
+  rooms            Room[]
 
   @@map("apartments")
 }
 
 model Room {
-  id          String    @id
-  name        String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
-  apartmentId String    @map("apartment_id")
-  tenants     Tenant[]
+  id               String    @id
+  name             String
+  apartment        Apartment @relation(fields: [apartmentId], references: [id])
+  apartmentId      String    @map("apartment_id")
+  tenants          Tenant[]
+  rent             Int?
+  waterCharge      Int?
+  parkingFee       Int?
+  commonAreaCharge Int?
 
   @@map("rooms")
 }
 
 model Tenant {
-  id     String    @id
-  name   String
-  room   Room      @relation(fields: [roomId], references: [id])
-  roomId String    @map("room_id")
-  since  DateTime?
-  until  DateTime?
+  id               String    @id
+  name             String
+  room             Room      @relation(fields: [roomId], references: [id])
+  roomId           String    @map("room_id")
+  since            DateTime?
+  until            DateTime?
+  rent             Int?
+  waterCharge      Int?
+  parkingFee       Int?
+  commonAreaCharge Int?
+  invoices         Invoice[]
 
   @@map("tenants")
+}
+
+model Invoice {
+  id          String   @id
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId    String
+  month       DateTime
+  waterCharge Int?
+
+  @@map("invoices")
 }

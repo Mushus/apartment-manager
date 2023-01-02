@@ -1,6 +1,5 @@
 import { ulid } from 'ulid';
 import z from 'zod';
-import { deserializeNullDate } from '../converter';
 import { database } from '../prisma';
 import { procedure, router } from './trpc';
 
@@ -12,15 +11,23 @@ const getInput = z.object({
 const createInput = z.object({
   roomId: z.string(),
   name: z.string(),
-  since: z.string().nullable(),
-  until: z.string().nullable(),
+  since: z.date().nullable(),
+  until: z.date().nullable(),
+  rent: z.number().int().nullable(),
+  waterCharge: z.number().int().nullable(),
+  parkingFee: z.number().int().nullable(),
+  commonAreaCharge: z.number().int().nullable(),
 });
 
 const updateInput = z.object({
   id: z.string(),
   name: z.string(),
-  since: z.string().nullable(),
-  until: z.string().nullable(),
+  since: z.date().nullable(),
+  until: z.date().nullable(),
+  rent: z.number().int().nullable(),
+  waterCharge: z.number().int().nullable(),
+  parkingFee: z.number().int().nullable(),
+  commonAreaCharge: z.number().int().nullable(),
 });
 
 const deleteInput = z.object({
@@ -44,8 +51,6 @@ export const tenant = router({
     const data = {
       ...input,
       id: ulid(),
-      since: deserializeNullDate(input.since),
-      until: deserializeNullDate(input.until),
     };
     await database.tenant.create({ data });
   }),
@@ -53,8 +58,6 @@ export const tenant = router({
     const { id, ...inputData } = input;
     const data = {
       ...inputData,
-      since: deserializeNullDate(input.since),
-      until: deserializeNullDate(input.until),
     };
     await database.tenant.update({ where: { id }, data });
   }),
@@ -72,7 +75,12 @@ export const tenant = router({
           { OR: [{ until: { equals: null } }, { until: { gte: startOfMonth } }] },
         ],
       },
-      include: { room: { include: { apartment: true } } },
+      include: {
+        room: { include: { apartment: true } },
+        invoices: {
+          where: { month: startOfMonth },
+        },
+      },
       orderBy: [{ room: { apartmentId: 'desc' } }, { room: { id: 'desc' } }, { id: 'desc' }],
     });
   }),

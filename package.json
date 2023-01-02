@@ -39,6 +39,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.41.1",
     "react-sortable-hoc": "^2.0.0",
+    "superjson": "^1.12.1",
     "ulid": "^2.3.0",
     "zod": "^3.20.2"
   },

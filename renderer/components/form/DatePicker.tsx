@@ -1,4 +1,4 @@
-import { TextField } from '@mui/material';
+import { TextField as MTextField } from '@mui/material';
 import { ChangeEventHandler, useCallback, useEffect, useState } from 'react';
 
 type Props = {
@@ -6,7 +6,7 @@ type Props = {
   onChange: (value: string | null) => void;
 };
 
-const MyDatePicker = ({ value, onChange }: Props) => {
+const DatePicker = ({ value, onChange }: Props) => {
   const [innerValue, setInnerValue] = useState<string>('');
   useEffect(() => {
     if (value !== innerValue) {
@@ -23,7 +23,7 @@ const MyDatePicker = ({ value, onChange }: Props) => {
     [setInnerValue],
   );
 
-  return <TextField fullWidth type="date" value={innerValue} onChange={handleChange} />;
+  return <MTextField fullWidth type="date" value={innerValue} onChange={handleChange} />;
 };
 
-export default MyDatePicker;
+export default DatePicker;

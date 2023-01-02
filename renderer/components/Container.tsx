@@ -3,11 +3,14 @@ import { ReactNode } from 'react';
 
 type Props = {
   children?: ReactNode;
+  mb?: string;
 };
 
-const Container = ({ children }: Props) => (
+const Container = ({ children, mb }: Props) => (
   <MContainer style={{ overflow: 'hidden' }}>
-    <Box my="32px">{children}</Box>
+    <Box my="32px" mb={mb}>
+      {children}
+    </Box>
   </MContainer>
 );
 
