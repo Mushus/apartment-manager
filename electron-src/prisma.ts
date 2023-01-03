@@ -1,12 +1,9 @@
 // import isDev from 'electron-is-dev';
 import { PrismaClient } from '@prisma/client';
-import argv from 'argv';
 
-const { targets } = argv.run();
-const url = targets[0];
-console.log(url);
+const url = process.argv[0];
 const datasources =
-  url !== undefined
+  url !== undefined && url.startsWith('file://')
     ? {
         db: {
           url,

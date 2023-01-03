@@ -25,12 +25,12 @@ app.on('ready', async () => {
     },
   });
   mainWindow.setMenu(null);
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   const url = isDev
-    ? `http://localhost:${port}/home`
+    ? `http://localhost:${port}/`
     : format({
-        pathname: join(__dirname, '../renderer/out/home.html'),
+        pathname: join(__dirname, '../renderer/out/index.html'),
         protocol: 'file:',
         slashes: true,
       });

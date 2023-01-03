@@ -42,19 +42,28 @@ const InvoiceComponent = ({ tenants }: Props) => {
           const room = tenant.room;
           const apartment = room.apartment;
           const invoice = tenant.invoices?.[0];
-          const rent = room.rent ?? apartment.rent ?? 0;
+          const rent = tenant.rent ?? room.rent ?? apartment.rent ?? 0;
           const waterCharge =
             tenant.waterCharge ?? invoice.waterCharge ?? room.waterCharge ?? apartment.waterCharge ?? 0;
           const parkingFee = tenant.parkingFee ?? room.parkingFee ?? apartment.parkingFee ?? 0;
           const commonAreaCharge = tenant.commonAreaCharge ?? room.commonAreaCharge ?? apartment.commonAreaCharge ?? 0;
 
           const sum = Number(rent) + Number(waterCharge) + Number(parkingFee) + Number(commonAreaCharge);
-          const admin = tenant.admin ?? room.admin ?? apartment.admin ?? '管理者';
+          const admin = tenant.admin || room.admin || apartment.admin || '管理者';
+
+          const targetDate = dayjs(invoice.month);
+          const targetYear = targetDate.year();
+          const targetMonth = ('00' + (targetDate.month() + 1)).slice(-2);
           const receipt = (
             <>
-              <div className={classNames(styles.tenantName, styles.GaTanantName)}>{tenant.name} 様</div>
+              <div className={classNames(styles.tenantName, styles.GaTanantName)}>
+                {apartment.name} {room.name} / {tenant.name} 様
+              </div>
               <div className={classNames(styles.publishAt, styles.GaPublishAt)}>
                 発行日: {year} 年 {month} 月 {date} 日
+              </div>
+              <div className={classNames(styles.targetDate, styles.GaTargetDate)}>
+                {targetYear} 年 {targetMonth} 月分
               </div>
               <table className={classNames(styles.chargeTable, styles.GaTable)}>
                 <thead>
@@ -100,11 +109,16 @@ const InvoiceComponent = ({ tenants }: Props) => {
                 </section>
                 <section className={styles.certificate}>
                   <h1 className={classNames(styles.header, styles.GaHeader)}>入金証</h1>
-                  <div className={classNames(styles.tenantName, styles.GaTenantName)}>{tenant.name} 様</div>
-                  <div className={classNames(styles.publishAt, styles.GaPublishAt)}>
-                    発行日: {year} 年 {month} 月 {date} 日
+                  <div className={classNames(styles.tenantName, styles.GaTenantName)}>
+                    {apartment.name} {room.name} / {tenant.name} 様
                   </div>
-                  <div className={classNames(styles.charge, styles.charge)}>
+                  <div className={classNames(styles.publishAt, styles.GaPublishAt)}>
+                    発行日: 　　　　 年 　　 月 　　 日
+                  </div>
+                  <div className={classNames(styles.targetDate, styles.GaTargetDate)}>
+                    {targetYear} 年 {targetMonth} 月分
+                  </div>
+                  <div className={classNames(styles.charge, styles.GaCharge)}>
                     金額 <strong>{sum.toLocaleString()} 円</strong> を頂きました。
                   </div>
                   <div className={classNames(styles.admin, styles.GaAdmin)}>{admin}</div>

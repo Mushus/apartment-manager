@@ -56,23 +56,29 @@
 
 .paper > .receipt {
   display: grid;
-  grid-template: 'header     header   ' 10mm
-                  'tenantName publishAt' 10mm
-                  'table      table    ' auto
-                  'admin      admin    ' auto
+  grid-template:  'header     header    ' 10mm
+                  'tenantName publishAt ' 6mm
+                  'targetDate targetDate' 10mm
+                  'table      table     ' auto
+                  'admin      admin     ' auto
                   /auto       auto;
 }
 
 .paper > .certificate {
   display: grid;
-  grid-template: 'header     header   ' 10mm
-                  'tenantName publishAt' 10mm
-                  'charge     charge   ' auto
-                  'admin      admin    ' auto
+  grid-template:  'header      header   ' 10mm
+                  'tenantName publishAt ' 6mm
+                  'targetDate targetDate' 10mm
+                  'charge     charge    ' auto
+                  'admin      admin     ' auto
                   /auto       auto;
 }
 
 .publishAt {
+  text-align: right;
+}
+
+.targetDate {
   text-align: right;
 }
 
@@ -139,6 +145,10 @@
 
 .GaPublishAt{ 
   grid-area: publishAt;
+}
+
+.GaTargetDate {
+  grid-area: targetDate;
 }
 
 .GaTable{ 
