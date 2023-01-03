@@ -21,8 +21,8 @@ export default configurePage({
     const handleSave = async (apartment: ExternalApartment) => {
       if (!apartment.id) return;
       client.apartment.update.mutate({ ...apartment, id: apartment.id });
-      util.invalidate();
       router.push('/apartment');
+      util.invalidate();
     };
 
     return apartment && !isLoading ? <ApartmentEdit apartment={apartment} onSave={handleSave} /> : <Loading />;

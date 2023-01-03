@@ -16,7 +16,7 @@ app.on('ready', async () => {
   await prepareNext('./renderer', port);
 
   const mainWindow = new BrowserWindow({
-    width: 800,
+    width: 1000,
     height: 800,
     webPreferences: {
       nodeIntegration: false,

@@ -138,7 +138,13 @@ const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave
     await onSave(getExportInvoice());
     setPopoverTarget(currentTarget);
   };
-  const handlePrint = () => onPrint(getExportInvoice(), Object.keys(checks));
+  const handlePrint = () =>
+    onPrint(
+      getExportInvoice(),
+      Object.entries(checks)
+        .filter(([, value]) => value)
+        .map(([key]) => key),
+    );
 
   const [popoverTarget, setPopoverTarget] = useState<HTMLButtonElement | null>(null);
   const handleClosePopover = () => setPopoverTarget(null);
@@ -175,6 +181,7 @@ const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave
                 <TableCell padding="none">
                   <Input
                     type="number"
+                    style={{ width: '80px' }}
                     value={invoices[index].rent}
                     onChange={handleChangeRent(index)}
                     onBlur={handleBlurRent(index)}
@@ -184,6 +191,7 @@ const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave
                 <TableCell padding="none">
                   <Input
                     type="number"
+                    style={{ width: '80px' }}
                     value={invoices[index].waterCharge}
                     onChange={handleChangeWaterCharge(index)}
                     onBlur={handleBlurWaterCharge(index)}
