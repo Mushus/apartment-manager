@@ -31,8 +31,6 @@ const InvoiceComponent = ({ tenants }: Props) => {
     window.print();
   };
 
-  const administrator = '管理人';
-
   const now = useMemo(() => dayjs(), []);
   const year = String(now.year());
   const month = ('00' + (now.month() + 1)).slice(-2);
@@ -45,11 +43,13 @@ const InvoiceComponent = ({ tenants }: Props) => {
           const apartment = room.apartment;
           const invoice = tenant.invoices?.[0];
           const rent = room.rent ?? apartment.rent ?? 0;
-          const waterCharge = invoice.waterCharge ?? room.waterCharge ?? apartment.waterCharge ?? 0;
-          const parkingFee = room.parkingFee ?? room.parkingFee ?? apartment.parkingFee ?? 0;
-          const commonAreaCharge = room.commonAreaCharge ?? room.commonAreaCharge ?? apartment.commonAreaCharge ?? 0;
+          const waterCharge =
+            tenant.waterCharge ?? invoice.waterCharge ?? room.waterCharge ?? apartment.waterCharge ?? 0;
+          const parkingFee = tenant.parkingFee ?? room.parkingFee ?? apartment.parkingFee ?? 0;
+          const commonAreaCharge = tenant.commonAreaCharge ?? room.commonAreaCharge ?? apartment.commonAreaCharge ?? 0;
 
           const sum = Number(rent) + Number(waterCharge) + Number(parkingFee) + Number(commonAreaCharge);
+          const admin = tenant.admin ?? room.admin ?? apartment.admin ?? '管理者';
           const receipt = (
             <>
               <div className={classNames(styles.tenantName, styles.GaTanantName)}>{tenant.name} 様</div>
@@ -88,7 +88,7 @@ const InvoiceComponent = ({ tenants }: Props) => {
                   </tr>
                 </tfoot>
               </table>
-              <div className={classNames(styles.admin, styles.GaAdmin)}>{administrator}</div>
+              <div className={classNames(styles.admin, styles.GaAdmin)}>{admin}</div>
             </>
           );
           return (
@@ -107,7 +107,7 @@ const InvoiceComponent = ({ tenants }: Props) => {
                   <div className={classNames(styles.charge, styles.charge)}>
                     金額 <strong>{sum.toLocaleString()} 円</strong> を頂きました。
                   </div>
-                  <div className={classNames(styles.admin, styles.GaAdmin)}>{administrator}</div>
+                  <div className={classNames(styles.admin, styles.GaAdmin)}>{admin}</div>
                 </section>
                 <section className={styles.receipt}>
                   <h1 className={classNames(styles.header, styles.GaHeader)}>家賃請求</h1>
@@ -128,7 +128,7 @@ const InvoiceComponent = ({ tenants }: Props) => {
 };
 
 export default configurePage({
-  query: z.object({ month: z.string() }),
+  query: z.object({ month: z.string(), tenantIds: z.string().optional() }),
   layout: ({ children }) => (
     <Layout title="プレビュー" prev="/invoice">
       {children}
@@ -136,9 +136,10 @@ export default configurePage({
   ),
   page: ({ query }) => {
     const params = useMemo(() => {
+      const tenantIds = query.tenantIds?.split(',') ?? [];
       const date = dayjs(query.month);
-      return { year: date.year(), month: date.month() + 1 };
-    }, []);
+      return { year: date.year(), month: date.month() + 1, tenantIds };
+    }, [query.tenantIds]);
     const { data: tenants, isLoading } = nextClient.tenant.listOccupying.useQuery(params);
     const defaultChecks = tenants ? Object.fromEntries(tenants.map((tenant) => [tenant.id, true])) : undefined;
     return tenants && defaultChecks && !isLoading ? (

@@ -1,5 +1,6 @@
 // Native
 import { join } from 'path';
+import isDev from 'electron-is-dev';
 
 // Packages
 import { BrowserWindow, app, ipcMain } from 'electron';
@@ -7,10 +8,11 @@ import prepareNext from 'electron-next';
 import { appRouter } from './trpc';
 import { callProcedure } from '@trpc/server';
 import { ProcedureCallOptions } from '@trpc/server/dist/core/internals/procedureBuilder';
-import { createUrl, port } from './util';
+import { format } from 'url';
 
 // Prepare the renderer once the app is ready
 app.on('ready', async () => {
+  const port = 8000;
   await prepareNext('./renderer', port);
 
   const mainWindow = new BrowserWindow({
@@ -22,8 +24,16 @@ app.on('ready', async () => {
       preload: join(__dirname, 'preload.js'),
     },
   });
+  mainWindow.setMenu(null);
+  mainWindow.webContents.openDevTools();
 
-  const url = createUrl(port);
+  const url = isDev
+    ? `http://localhost:${port}/home`
+    : format({
+        pathname: join(__dirname, '../renderer/out/home.html'),
+        protocol: 'file:',
+        slashes: true,
+      });
   mainWindow.loadURL(url);
 });
 

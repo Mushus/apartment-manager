@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import type { Apartment as OApartment, Room } from '@prisma/client';
+import type { Apartment as PApartment, Room as PRoom } from '@prisma/client';
 import Layout from '@/components/Layout';
 import ButtonLink from '@/components/ButtonLink';
 import { nextClient } from '@/trpc';
@@ -8,7 +8,11 @@ import Section from '@/components/Section';
 import { configurePage } from '@/components/page/Page';
 import Loading from '@/components/page/Loading';
 
-type Apartment = OApartment & {
+type Room = PRoom & {
+  occupancyStatus: string;
+};
+
+type Apartment = PApartment & {
   rooms: Room[];
 };
 
@@ -34,7 +38,7 @@ const RoomComponent = ({ apartments }: Props) => {
                 {apartment.rooms.map((room) => (
                   <TableRow key={room.id}>
                     <TableCell>{room.name}</TableCell>
-                    <TableCell>入居状況</TableCell>
+                    <TableCell>{room.occupancyStatus === 'empty' ? '---' : '入居中'}</TableCell>
                     <TableCell align="right">
                       <ButtonLink href={`/room/detail/${room.id}`}>編集</ButtonLink>
                     </TableCell>
@@ -56,7 +60,7 @@ export default configurePage({
     </Layout>
   ),
   page: () => {
-    const { data: apartments, isLoading } = nextClient.apartment.list.useQuery();
+    const { data: apartments, isLoading } = nextClient.room.list.useQuery();
     return apartments && !isLoading ? <RoomComponent apartments={apartments} /> : <Loading />;
   },
 });

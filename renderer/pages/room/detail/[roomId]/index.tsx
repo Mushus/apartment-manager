@@ -1,7 +1,7 @@
 import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import Layout from '@/components/Layout';
 import z from 'zod';
-import type { Apartment, Room, Tenant } from '@prisma/client';
+import type { Apartment, Tenant as PTenant, Room as PRoom } from '@prisma/client';
 import { Box } from '@mui/material';
 import ButtonLink from '@/components/ButtonLink';
 import { client, nextClient } from '@/trpc';
@@ -13,6 +13,15 @@ import Section from '@/components/Section';
 import Loading from '@/components/page/Loading';
 import { configurePage } from '@/components/page/Page';
 import { usePrompt } from '@/components/Prompt';
+import styles from '@/styles/Table.module.scss';
+
+type Tenant = PTenant & {
+  isResidence: boolean;
+};
+
+type Room = PRoom & {
+  occupancyStatus: string;
+};
 
 type Props = {
   apartment: Apartment;
@@ -45,7 +54,7 @@ function Detail({ apartment, room, tenants }: Props) {
         </Typography>
       </Box>
       <FormGroup label="入居状況">
-        <TextField value="入居中" disabled />
+        <TextField value={room.occupancyStatus === 'empty' ? '空室' : '入居中'} disabled />
       </FormGroup>
       <Section title="入居者">
         <TableContainer>
@@ -60,7 +69,7 @@ function Detail({ apartment, room, tenants }: Props) {
             </TableHead>
             <TableBody>
               {tenants.map((tenant) => (
-                <TableRow key={tenant.id}>
+                <TableRow key={tenant.id} className={tenant.isResidence ? styles.activeRow : undefined}>
                   <TableCell>{tenant.name}</TableCell>
                   <TableCell>{date(tenant.since)}</TableCell>
                   <TableCell>{date(tenant.until)}</TableCell>

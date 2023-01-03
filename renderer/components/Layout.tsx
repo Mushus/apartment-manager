@@ -37,6 +37,7 @@ const Layout = ({ children, title, prev }: Props) => {
             color="inherit"
             aria-label="menu"
             sx={{ mr: 2 }}
+            LinkComponent={Link}
             href={prev ?? ''}
             disabled={prev === undefined}
           >

@@ -18,6 +18,7 @@ model Apartment {
   parkingFee       Int?
   commonAreaCharge Int?
   rooms            Room[]
+  admin            String
 
   @@map("apartments")
 }
@@ -32,7 +33,10 @@ model Room {
   waterCharge      Int?
   parkingFee       Int?
   commonAreaCharge Int?
+  admin            String
+  index            Int
 
+  @@index(index)
   @@map("rooms")
 }
 
@@ -48,6 +52,7 @@ model Tenant {
   parkingFee       Int?
   commonAreaCharge Int?
   invoices         Invoice[]
+  admin            String
 
   @@map("tenants")
 }
@@ -57,6 +62,7 @@ model Invoice {
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
   tenantId    String
   month       DateTime
+  rent        Int?
   waterCharge Int?
 
   @@map("invoices")

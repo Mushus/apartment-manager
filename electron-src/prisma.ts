@@ -1,3 +1,19 @@
-import { PrismaClient } from "@prisma/client";
+// import isDev from 'electron-is-dev';
+import { PrismaClient } from '@prisma/client';
+import argv from 'argv';
 
-export const database = new PrismaClient()
+const { targets } = argv.run();
+const url = targets[0];
+console.log(url);
+const datasources =
+  url !== undefined
+    ? {
+        db: {
+          url,
+        },
+      }
+    : undefined;
+
+export const database = new PrismaClient({
+  datasources,
+});

@@ -1,18 +1,3 @@
-import { join } from 'path';
-import { format } from 'url';
-import isDev from 'electron-is-dev';
-
-export const port = 8000;
-
-export const createUrl = (port: number, path: string = '/') =>
-  isDev
-    ? `http://localhost:${port}${path}`
-    : format({
-        pathname: join(__dirname, '../renderer/out', path === '' ? 'index.html' : `${path}.html`),
-        protocol: 'file:',
-        slashes: true,
-      });
-
 type WithID = { id: string };
 type WithNullID<T> = {
   [K in keyof T]: K extends 'id' ? T[K] | null : T[K];

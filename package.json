@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "main": "main/index.js",
-  "productName": "ElectronTypescriptNext",
+  "productName": "アパート管理システム",
   "scripts": {
     "clean": "rimraf dist main renderer/out renderer/.next",
     "dev": "npm run build-electron && electron .",
@@ -26,6 +26,7 @@
     "@trpc/next": "^10.7.0",
     "@trpc/react-query": "^10.7.0",
     "@trpc/server": "^10.7.0",
+    "argv": "^0.0.2",
     "array-move": "^4.0.0",
     "classnames": "^2.3.2",
     "dayjs": "^1.11.7",
@@ -44,6 +45,7 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
+    "@types/argv": "^0.0.5",
     "@types/lodash": "^4.14.191",
     "@types/node": "^14.14.6",
     "@types/react": "^18.0.26",
@@ -61,6 +63,11 @@
     "files": [
       "main",
       "renderer/out"
+    ],
+    "extraResources": [
+      "prisma/**/*",
+      "node_modules/.prisma/**/*",
+      "node_modules/@prisma/client/**/*"
     ]
   }
 }

@@ -55,11 +55,12 @@ const TenantEdit = ({ apartment, room, tenant: originalTenant, onSave }: Props) 
       id: null,
       name: '',
       since: dateToForm(new Date(now.year(), now.month(), now.date())),
-      until: dateToForm(new Date(2100, 1, 1)),
+      until: dateToForm(new Date(2100, 0, 1)),
       rent: numToForm(room.rent ?? apartment.rent ?? null),
       waterCharge: numToForm(room.waterCharge ?? apartment.waterCharge ?? null),
       parkingFee: numToForm(room.parkingFee ?? apartment.parkingFee ?? null),
       commonAreaCharge: numToForm(room.commonAreaCharge ?? apartment.commonAreaCharge ?? null),
+      admin: room.admin ?? apartment.admin ?? '',
     };
   }, [originalTenant, room, apartment]);
 
@@ -72,6 +73,7 @@ const TenantEdit = ({ apartment, room, tenant: originalTenant, onSave }: Props) 
   const handleChangeWaterCharge = useObjectState(setTenant, 'waterCharge');
   const handleChangeParkingFee = useObjectState(setTenant, 'parkingFee');
   const handleChangeCommonAreaCharge = useObjectState(setTenant, 'commonAreaCharge');
+  const handleChangeAdmin = useObjectState(setTenant, 'admin');
 
   const handleSubmit = useSubmit(
     () =>
@@ -115,6 +117,9 @@ const TenantEdit = ({ apartment, room, tenant: originalTenant, onSave }: Props) 
         </FormGroup>
         <FormGroup label="共益費(円)">
           <NumberTextField value={tenant.commonAreaCharge} onChange={handleChangeCommonAreaCharge} />
+        </FormGroup>
+        <FormGroup label="管理者">
+          <NumberTextField value={tenant.admin} onChange={handleChangeAdmin} />
         </FormGroup>
         <FloatingControls>
           <Button variant="contained" type="submit" endIcon={<SaveIcon />}>

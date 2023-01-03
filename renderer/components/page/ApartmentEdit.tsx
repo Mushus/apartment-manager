@@ -15,7 +15,7 @@ import Controls from '../Controls';
 import NumberTextField from '../form/NumberTextField';
 import { formToNum, numToForm } from '@/util';
 
-type Room = Omit<PRoom, 'id' | 'apartmentId' | 'rent' | 'waterCharge' | 'parkingFee' | 'commonAreaCharge'> & {
+type Room = Omit<PRoom, 'id' | 'apartmentId' | 'rent' | 'waterCharge' | 'parkingFee' | 'commonAreaCharge' | 'index'> & {
   id: PRoom['id'] | null;
   key: string;
   rent: string;
@@ -79,6 +79,7 @@ const ApartmentEdit = ({ apartment: originalApartment, onSave }: Props) => {
             waterCharge: '',
             parkingFee: '',
             commonAreaCharge: '',
+            admin: '',
           },
     [originalApartment],
   );
@@ -106,6 +107,7 @@ const ApartmentEdit = ({ apartment: originalApartment, onSave }: Props) => {
   const handleChangeWaterCharge = useObjectState(setApartment, 'waterCharge');
   const handleChangeParkingFee = useObjectState(setApartment, 'parkingFee');
   const handleChangeCommonAreaCharge = useObjectState(setApartment, 'commonAreaCharge');
+  const handleChangeAdmin = useObjectState(setApartment, 'admin');
 
   const handleSort: SortEndHandler = useCallback(
     ({ oldIndex, newIndex }) => setRooms((r) => arrayMoveImmutable(r, oldIndex, newIndex)),
@@ -129,25 +131,37 @@ const ApartmentEdit = ({ apartment: originalApartment, onSave }: Props) => {
     () =>
       onSave({
         ...apartment,
-        rooms: rooms.map((room) => ({
+        rooms: rooms.map((room, index) => ({
           ...room,
+          index,
           rent: formToNum(room.rent),
           waterCharge: formToNum(room.waterCharge),
           parkingFee: formToNum(room.parkingFee),
           commonAreaCharge: formToNum(room.commonAreaCharge),
+          admin: room.admin,
         })),
         rent: formToNum(apartment.rent),
         waterCharge: formToNum(apartment.waterCharge),
         parkingFee: formToNum(apartment.parkingFee),
         commonAreaCharge: formToNum(apartment.commonAreaCharge),
+        admin: apartment.admin,
       }),
     [rooms, apartment, onSave],
   );
 
   const handleAddRoom = useCallback(() => {
-    setRooms((r) => [
+    setRooms((r): Room[] => [
       ...r,
-      { key: uniqueId('room'), id: null, name: '', rent: '', waterCharge: '', parkingFee: '', commonAreaCharge: '' },
+      {
+        key: uniqueId('room'),
+        id: null,
+        name: '',
+        rent: '',
+        waterCharge: '',
+        parkingFee: '',
+        commonAreaCharge: '',
+        admin: '',
+      },
     ]);
   }, [setApartment]);
 
@@ -181,6 +195,9 @@ const ApartmentEdit = ({ apartment: originalApartment, onSave }: Props) => {
         </FormGroup>
         <FormGroup label="共益費(円)">
           <NumberTextField value={apartment.commonAreaCharge} onChange={handleChangeCommonAreaCharge} />
+        </FormGroup>
+        <FormGroup label="管理者">
+          <NumberTextField value={apartment.admin} onChange={handleChangeAdmin} />
         </FormGroup>
         <Section title="部屋">
           <RoomsContainer
@@ -237,6 +254,7 @@ const RoomElement = SortableElement<RoomElementProps>(({ room, onUpdateRoom, onD
   const handleChangeWaterCharge = useObjectState(setRoom, 'waterCharge');
   const handleChangeParkingFee = useObjectState(setRoom, 'parkingFee');
   const handleChangeCommonAreaCharge = useObjectState(setRoom, 'commonAreaCharge');
+  const handleChangeAdmin = useObjectState(setRoom, 'admin');
 
   return (
     <Box border="1px solid #ddd" bgcolor="#fff" position="relative" padding="16px">
@@ -262,6 +280,9 @@ const RoomElement = SortableElement<RoomElementProps>(({ room, onUpdateRoom, onD
           </FormGroup>
           <FormGroup label="共益費(円)">
             <NumberTextField value={room.commonAreaCharge} onChange={handleChangeCommonAreaCharge} />
+          </FormGroup>
+          <FormGroup label="管理者">
+            <NumberTextField value={room.admin} onChange={handleChangeAdmin} />
           </FormGroup>
         </Box>
       )}

@@ -17,12 +17,14 @@ const createInput = z.object({
       waterCharge: z.number().int().nullable(),
       parkingFee: z.number().int().nullable(),
       commonAreaCharge: z.number().int().nullable(),
+      admin: z.string(),
     }),
   ),
   rent: z.number().int().nullable(),
   waterCharge: z.number().int().nullable(),
   parkingFee: z.number().int().nullable(),
   commonAreaCharge: z.number().int().nullable(),
+  admin: z.string(),
 });
 
 const updateInput = z.object({
@@ -36,12 +38,14 @@ const updateInput = z.object({
       waterCharge: z.number().int().nullable(),
       parkingFee: z.number().int().nullable(),
       commonAreaCharge: z.number().int().nullable(),
+      admin: z.string(),
     }),
   ),
   rent: z.number().int().nullable(),
   waterCharge: z.number().int().nullable(),
   parkingFee: z.number().int().nullable(),
   commonAreaCharge: z.number().int().nullable(),
+  admin: z.string(),
 });
 
 const deleteInput = z.object({ apartmentId: z.string() });
@@ -49,13 +53,17 @@ const deleteInput = z.object({ apartmentId: z.string() });
 export const apartment = router({
   list: procedure.query(() =>
     database.apartment.findMany({
-      include: { rooms: true },
+      include: { rooms: { orderBy: { index: 'asc' } } },
     }),
   ),
   get: procedure.input(getInput).query(({ input }) =>
     database.apartment.findFirst({
       where: { id: input.apartmentId },
-      include: { rooms: true },
+      include: {
+        rooms: {
+          orderBy: { index: 'asc' },
+        },
+      },
       rejectOnNotFound: true,
     }),
   ),
@@ -65,9 +73,10 @@ export const apartment = router({
         id: ulid(),
         ...input,
         rooms: {
-          create: input.rooms.map((room) => ({
+          create: input.rooms.map((room, index) => ({
             ...room,
             id: ulid(),
+            index,
           })),
         },
       },
@@ -84,7 +93,7 @@ export const apartment = router({
         rooms: true,
       },
     });
-    const roomsRecord = rooms.map((room) => ({ ...room, apartmentId: updatedApartment.id }));
+    const roomsRecord = rooms.map((room, index) => ({ ...room, apartmentId: updatedApartment.id, index }));
     const { created, updated, deleted } = makeArrayDiff(updatedApartment.rooms, roomsRecord);
     for (const room of created) {
       await database.room.create({ data: { ...room, id: ulid() } });

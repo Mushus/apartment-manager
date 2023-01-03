@@ -17,6 +17,7 @@ const createInput = z.object({
   waterCharge: z.number().int().nullable(),
   parkingFee: z.number().int().nullable(),
   commonAreaCharge: z.number().int().nullable(),
+  admin: z.string(),
 });
 
 const updateInput = z.object({
@@ -28,6 +29,7 @@ const updateInput = z.object({
   waterCharge: z.number().int().nullable(),
   parkingFee: z.number().int().nullable(),
   commonAreaCharge: z.number().int().nullable(),
+  admin: z.string(),
 });
 
 const deleteInput = z.object({
@@ -37,6 +39,7 @@ const deleteInput = z.object({
 const listOccupyingInput = z.object({
   year: z.number(),
   month: z.number(),
+  tenantIds: z.array(z.string()).optional(),
 });
 
 export const tenant = router({
@@ -67,12 +70,14 @@ export const tenant = router({
 
   listOccupying: procedure.input(listOccupyingInput).query(({ input }) => {
     const startOfMonth = new Date(input.year, input.month - 1, 1);
-    const endOfMonth = new Date(input.year, input.month - 1, 1);
+    const endOfMonth = new Date(input.year, input.month, 1);
+    const hasIdsCondition = input.tenantIds && input.tenantIds.length > 0 ? [{ id: { in: input.tenantIds } }] : [];
     return database.tenant.findMany({
       where: {
         AND: [
           { OR: [{ since: { equals: null } }, { since: { lte: endOfMonth } }] },
-          { OR: [{ until: { equals: null } }, { until: { gte: startOfMonth } }] },
+          { OR: [{ until: { equals: null } }, { until: { gt: startOfMonth } }] },
+          ...hasIdsCondition,
         ],
       },
       include: {
@@ -81,7 +86,12 @@ export const tenant = router({
           where: { month: startOfMonth },
         },
       },
-      orderBy: [{ room: { apartmentId: 'desc' } }, { room: { id: 'desc' } }, { id: 'desc' }],
+      orderBy: [
+        { room: { apartmentId: 'desc' } },
+        { room: { index: 'asc' } },
+        { room: { id: 'desc' } },
+        { id: 'desc' },
+      ],
     });
   }),
 });
