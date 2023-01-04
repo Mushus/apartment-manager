@@ -1,7 +1,9 @@
 import {
   Button,
   Checkbox,
+  IconButton,
   Input,
+  InputAdornment,
   Popover,
   Table,
   TableBody,
@@ -14,7 +16,15 @@ import {
 } from '@mui/material';
 import Layout from '@/components/Layout';
 import { Apartment } from '@mui/icons-material';
-import { ChangeEventHandler, MouseEvent, useMemo, useState } from 'react';
+import {
+  ChangeEventHandler,
+  FocusEventHandler,
+  FormEventHandler,
+  MouseEvent,
+  MouseEventHandler,
+  useMemo,
+  useState,
+} from 'react';
 import { Box } from '@mui/material';
 import PrintIcon from '@mui/icons-material/Print';
 import { mapValues } from 'lodash';
@@ -28,6 +38,7 @@ import dayjs from 'dayjs';
 import SaveIcon from '@mui/icons-material/Save';
 import { formToNum } from '@/util';
 import { useRouter } from 'next/router';
+import CalculateIcon from '@mui/icons-material/Calculate';
 
 type Apartment = PApartment;
 
@@ -136,7 +147,7 @@ const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave
   const handleSave = async (e: MouseEvent<HTMLButtonElement>) => {
     const currentTarget = e.currentTarget;
     await onSave(getExportInvoice());
-    setPopoverTarget(currentTarget);
+    setSavePopoverTarget(currentTarget);
   };
   const handlePrint = () =>
     onPrint(
@@ -146,9 +157,36 @@ const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave
         .map(([key]) => key),
     );
 
-  const [popoverTarget, setPopoverTarget] = useState<HTMLButtonElement | null>(null);
-  const handleClosePopover = () => setPopoverTarget(null);
-  const openPopover = Boolean(popoverTarget);
+  const [savePopoverTarget, setSavePopoverTarget] = useState<HTMLButtonElement | null>(null);
+  const handleCloseSavePopover = () => setSavePopoverTarget(null);
+  const openSavePopover = Boolean(savePopoverTarget);
+
+  const [waterChargePopoverTarget, setWaterChargePopoverTarget] = useState<{
+    elem: HTMLButtonElement;
+    index: number;
+  } | null>(null);
+  const handleCloseWaterChargePopover = () => {
+    setWaterChargePopoverTarget(null);
+  };
+  const openWaterChargePopover = Boolean(waterChargePopoverTarget);
+
+  const handleClickWaterCharge =
+    (index: number): MouseEventHandler<HTMLButtonElement> =>
+    (e) => {
+      setWaterChargePopoverTarget({ elem: e.currentTarget, index });
+      setWaterUsage('');
+    };
+
+  const [waterUsage, setWaterUsage] = useState('');
+  const handleUpdateWaterUsage: ChangeEventHandler<HTMLInputElement> = (e) => setWaterUsage(e.target.value);
+  const handleCalcWaterCharge: FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
+    const waterUsageNum = formToNum(waterUsage);
+    if (waterChargePopoverTarget && waterUsageNum !== null) {
+      setInvoiceValue(waterChargePopoverTarget.index, 'waterCharge', () => String(waterUsageNum * 350));
+    }
+    setWaterChargePopoverTarget(null);
+  };
 
   return (
     <Container>
@@ -189,12 +227,22 @@ const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave
                   円
                 </TableCell>
                 <TableCell padding="none">
-                  <Input
+                  <TextField
                     type="number"
-                    style={{ width: '80px' }}
+                    variant="standard"
+                    style={{ width: '120px' }}
                     value={invoices[index].waterCharge}
                     onChange={handleChangeWaterCharge(index)}
                     onBlur={handleBlurWaterCharge(index)}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={handleClickWaterCharge(index)}>
+                            <CalculateIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                   円
                 </TableCell>
@@ -203,11 +251,34 @@ const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave
           </TableBody>
         </Table>
       </TableContainer>
+      <Popover
+        open={openWaterChargePopover}
+        anchorEl={waterChargePopoverTarget?.elem}
+        onClose={handleCloseWaterChargePopover}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+      >
+        <Box p="16px">
+          <form onSubmit={handleCalcWaterCharge}>
+            <TextField label="使用量(㎥)" variant="outlined" value={waterUsage} onChange={handleUpdateWaterUsage} />
+            <Button type="submit" variant="contained">
+              入力
+            </Button>
+          </form>
+        </Box>
+      </Popover>
+
       <Box position="fixed" bottom="16px" right="16px">
         <Popover
-          open={openPopover}
-          anchorEl={popoverTarget}
-          onClose={handleClosePopover}
+          open={openSavePopover}
+          anchorEl={savePopoverTarget}
+          onClose={handleCloseSavePopover}
           anchorOrigin={{
             vertical: 'top',
             horizontal: 'center',
