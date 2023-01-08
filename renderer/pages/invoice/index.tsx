@@ -18,7 +18,6 @@ import Layout from '@/components/Layout';
 import { Apartment } from '@mui/icons-material';
 import {
   ChangeEventHandler,
-  FocusEventHandler,
   FormEventHandler,
   MouseEvent,
   MouseEventHandler,
@@ -68,9 +67,10 @@ type Props = {
   onChangeMonth: (fn: (value: string) => string) => void;
   onSave(invoices: ExternalInvoice[]): Promise<any>;
   onPrint(invoices: ExternalInvoice[], tenantIds: string[]): Promise<any>;
+  onPrintList(invoices: ExternalInvoice[]): Promise<any>;
 };
 
-const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave, onPrint }: Props) => {
+const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave, onPrint, onPrintList }: Props) => {
   const [checks, setChecks] = useState(defaultChecks);
   const getCheck = (id: string) => Boolean(checks[id]);
 
@@ -156,6 +156,7 @@ const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave
         .filter(([, value]) => value)
         .map(([key]) => key),
     );
+  const handlePrintList = () => onPrintList(getExportInvoice());
 
   const [savePopoverTarget, setSavePopoverTarget] = useState<HTMLButtonElement | null>(null);
   const handleCloseSavePopover = () => setSavePopoverTarget(null);
@@ -296,6 +297,9 @@ const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave
         <Button variant="contained" endIcon={<PrintIcon />} onClick={handlePrint} disabled={notCheck}>
           印刷
         </Button>
+        <Button variant="contained" endIcon={<PrintIcon />} onClick={handlePrintList} disabled={notCheck}>
+          表の印刷
+        </Button>
       </Box>
     </Container>
   );
@@ -317,7 +321,7 @@ export default configurePage({
       const date = dayjs(month);
       return { year: date.year(), month: date.month() + 1 };
     }, [month]);
-    const { data: tenants, isLoading } = nextClient.tenant.listOccupying.useQuery(query);
+    const { data: tenants, isFetching } = nextClient.tenant.listOccupying.useQuery(query);
 
     const defaultChecks = tenants ? Object.fromEntries(tenants.map((tenant) => [tenant.id, true])) : undefined;
 
@@ -328,10 +332,16 @@ export default configurePage({
     const handlePrint = async (invoices: PInvoice[], tenantIds: string[]) => {
       const params = new URLSearchParams({ tenantIds: tenantIds.join(',') });
       await client.invoice.update.mutate({ month, invoices });
+      util.invalidate();
       router.push(`/invoice/preview/${month}?${params.toString()}`);
     };
+    const handlePrintList = async (invoices: PInvoice[]) => {
+      await client.invoice.update.mutate({ month, invoices });
+      util.invalidate();
+      router.push(`/invoice/list-preview/${month}`);
+    };
 
-    return tenants && defaultChecks && !isLoading ? (
+    return tenants && defaultChecks && !isFetching ? (
       <InvoiceComponent
         tenants={tenants}
         defaultChecks={defaultChecks}
@@ -340,6 +350,7 @@ export default configurePage({
         key={month}
         onSave={handleSave}
         onPrint={handlePrint}
+        onPrintList={handlePrintList}
       />
     ) : (
       <Loading />

@@ -75,8 +75,8 @@ export const tenant = router({
     return database.tenant.findMany({
       where: {
         AND: [
-          { OR: [{ since: { equals: null } }, { since: { lte: endOfMonth } }] },
-          { OR: [{ until: { equals: null } }, { until: { gt: startOfMonth } }] },
+          { OR: [{ since: { equals: null } }, { since: { lt: endOfMonth } }] },
+          { OR: [{ until: { equals: null } }, { until: { gte: startOfMonth } }] },
           ...hasIdsCondition,
         ],
       },

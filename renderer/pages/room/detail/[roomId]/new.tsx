@@ -15,7 +15,8 @@ export default configurePage({
   ),
   page: ({ query }) => {
     const router = useRouter();
-    const { data: room, isLoading } = nextClient.room.get.useQuery(query);
+    const util = nextClient.useContext();
+    const { data: room, isFetching } = nextClient.room.get.useQuery(query);
 
     const handleSubmit = async (tenant: ExternalTenant) => {
       const { roomId } = query;
@@ -23,10 +24,11 @@ export default configurePage({
         ...tenant,
         roomId,
       });
+      util.invalidate();
       router.push(`/room/detail/${roomId}`);
     };
 
-    return room && !isLoading ? (
+    return room && !isFetching ? (
       <TenantEdit apartment={room.apartment} room={room} onSave={handleSubmit} />
     ) : (
       <Loading />

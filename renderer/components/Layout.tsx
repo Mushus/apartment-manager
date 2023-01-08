@@ -4,6 +4,7 @@ import Head from 'next/head';
 import { AppBar, Button, IconButton, Toolbar, Typography } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Box } from '@mui/material';
+import styles from '../styles/Layout.module.scss'
 
 type Props = {
   children: ReactNode;
@@ -17,8 +18,8 @@ const Layout = ({ children, title, prev }: Props) => {
 
   const pages = [
     { title: 'トップ', href: '/' },
-    { title: '物件一覧', href: '/apartment' },
-    { title: '入居状況', href: '/room' },
+    { title: '物件編集', href: '/apartment' },
+    { title: '入居状況変更', href: '/room' },
     { title: 'レシート発行', href: '/invoice' },
   ];
 
@@ -29,7 +30,7 @@ const Layout = ({ children, title, prev }: Props) => {
         <meta charSet="utf-8" />
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
-      <AppBar position="sticky">
+      <AppBar position="sticky" className={styles.header}>
         <Toolbar>
           <IconButton
             size="large"

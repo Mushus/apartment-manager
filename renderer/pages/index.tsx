@@ -10,7 +10,7 @@ function Index() {
       <Container>
         <Section title="入居者管理">
           <Box my="8px">
-            <Link href="/room">部屋状況</Link>
+            <Link href="/room">入居状況変更</Link>
           </Box>
           <Box my="8px">
             <Link href="/invoice">レシート発行</Link>
@@ -19,7 +19,7 @@ function Index() {
 
         <Section title="マスタ管理">
           <Box my="8px">
-            <Link href="/apartment">アパート管理</Link>
+            <Link href="/apartment">物件編集</Link>
           </Box>
         </Section>
       </Container>

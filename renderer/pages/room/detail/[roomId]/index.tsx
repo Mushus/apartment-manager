@@ -100,7 +100,7 @@ export default configurePage({
     </Layout>
   ),
   page: ({ query }) => {
-    const { data: room, isLoading } = nextClient.room.get.useQuery(query);
-    return room && !isLoading ? <Detail room={room} apartment={room.apartment} tenants={room.tenants} /> : <Loading />;
+    const { data: room, isFetching } = nextClient.room.get.useQuery(query);
+    return room && !isFetching ? <Detail room={room} apartment={room.apartment} tenants={room.tenants} /> : <Loading />;
   },
 });

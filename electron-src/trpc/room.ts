@@ -34,7 +34,7 @@ export const room = router({
               tenants: {
                 where: {
                   AND: [
-                    { OR: [{ since: { equals: null } }, { since: { lte: today } }] },
+                    { OR: [{ since: { equals: null } }, { since: { lt: today } }] },
                     { OR: [{ until: { equals: null } }, { until: { gte: today } }] },
                   ],
                 },

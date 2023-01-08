@@ -64,12 +64,13 @@ function Index({ apartments }: Props) {
 
 export default configurePage({
   layout: ({ children }) => (
-    <Layout title="アパート一覧" prev="/">
+    <Layout title="物件編集 - 一覧" prev="/">
       {children}
     </Layout>
   ),
   page: () => {
-    const { data: apartments, isLoading } = nextClient.apartment.list.useQuery();
-    return apartments && !isLoading ? <Index apartments={apartments} /> : <Loading />;
+    const { data: apartments, isFetching } = nextClient.apartment.list.useQuery();
+    console.log("apartment: ", apartments, isFetching)
+    return apartments && !isFetching ? <Index apartments={apartments} /> : <Loading />;
   },
 });

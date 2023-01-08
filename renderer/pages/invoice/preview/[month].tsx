@@ -153,10 +153,10 @@ export default configurePage({
       const tenantIds = query.tenantIds?.split(',') ?? [];
       const date = dayjs(query.month);
       return { year: date.year(), month: date.month() + 1, tenantIds };
-    }, [query.tenantIds]);
-    const { data: tenants, isLoading } = nextClient.tenant.listOccupying.useQuery(params);
+    }, [query.tenantIds, query.month]);
+    const { data: tenants, isFetching } = nextClient.tenant.listOccupying.useQuery(params);
     const defaultChecks = tenants ? Object.fromEntries(tenants.map((tenant) => [tenant.id, true])) : undefined;
-    return tenants && defaultChecks && !isLoading ? (
+    return tenants && defaultChecks && !isFetching ? (
       <InvoiceComponent tenants={tenants} defaultChecks={defaultChecks} />
     ) : (
       <Loading />

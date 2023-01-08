@@ -55,12 +55,12 @@ const RoomComponent = ({ apartments }: Props) => {
 
 export default configurePage({
   layout: ({ children }) => (
-    <Layout title="入居状況" prev="/">
+    <Layout title="入居状況変更" prev="/">
       {children}
     </Layout>
   ),
   page: () => {
-    const { data: apartments, isLoading } = nextClient.room.list.useQuery();
-    return apartments && !isLoading ? <RoomComponent apartments={apartments} /> : <Loading />;
+    const { data: apartments, isFetching } = nextClient.room.list.useQuery();
+    return apartments && !isFetching ? <RoomComponent apartments={apartments} /> : <Loading />;
   },
 });

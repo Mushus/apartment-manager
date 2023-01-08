@@ -6,7 +6,7 @@ import { client, nextClient } from '@/trpc';
 
 export default configurePage({
   layout: ({ children }) => (
-    <Layout title="新しいアパート" prev="/apartment">
+    <Layout title="物件編集 - 新規" prev="/apartment">
       {children}
     </Layout>
   ),
@@ -15,8 +15,8 @@ export default configurePage({
     const router = useRouter();
     const handleSave = async (apartment: ExternalApartment) => {
       client.apartment.create.mutate(apartment);
-      router.push('/apartment');
       util.invalidate();
+      router.push('/apartment');
     };
     return <ApartmentEdit onSave={handleSave} />;
   },

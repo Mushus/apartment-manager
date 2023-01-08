@@ -18,7 +18,8 @@ export default configurePage({
   ),
   page: ({ query }) => {
     const router = useRouter();
-    const { data: tenant, isLoading } = nextClient.tenant.get.useQuery(query);
+    const util = nextClient.useContext();
+    const { data: tenant, isFetching } = nextClient.tenant.get.useQuery(query);
 
     const handleSubmit = async (data: ExternalTenant) => {
       const { roomId, tenantId } = query;
@@ -26,10 +27,11 @@ export default configurePage({
         ...data,
         id: tenantId,
       });
+      util.invalidate();
       router.push(`/room/detail/${roomId}`);
     };
 
-    return tenant && !isLoading ? (
+    return tenant && !isFetching ? (
       <TenantEdit apartment={tenant.room.apartment} room={tenant.room} tenant={tenant} onSave={handleSubmit} />
     ) : (
       <Loading />
