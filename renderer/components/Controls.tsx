@@ -6,7 +6,7 @@ type Props = {
 };
 
 const Controls = ({ children }: Props) => (
-  <Box display="flex" flexDirection="row-reverse" gap="8px">
+  <Box display="flex" flexDirection="row" justifyContent="flex-end" gap="8px">
     {children}
   </Box>
 );

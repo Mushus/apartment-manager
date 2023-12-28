@@ -44,7 +44,7 @@ const InvoiceComponent = ({ tenants }: Props) => {
           const invoice = tenant.invoices?.[0];
           const rent = tenant.rent ?? room.rent ?? apartment.rent ?? 0;
           const waterCharge =
-            tenant.waterCharge ?? invoice.waterCharge ?? room.waterCharge ?? apartment.waterCharge ?? 0;
+            invoice.waterCharge ?? 0;
           const parkingFee = tenant.parkingFee ?? room.parkingFee ?? apartment.parkingFee ?? 0;
           const commonAreaCharge = tenant.commonAreaCharge ?? room.commonAreaCharge ?? apartment.commonAreaCharge ?? 0;
 
@@ -143,11 +143,11 @@ const InvoiceComponent = ({ tenants }: Props) => {
 
 export default configurePage({
   query: z.object({ month: z.string(), tenantIds: z.string().optional() }),
-  layout: ({ children }) => (
-    <Layout title="プレビュー" prev="/invoice">
+  layout: ({ children, query }) => {
+    return <Layout title="プレビュー" prev={`/invoice/list/${query?.month}`}>
       {children}
     </Layout>
-  ),
+  },
   page: ({ query }) => {
     const params = useMemo(() => {
       const tenantIds = query.tenantIds?.split(',') ?? [];

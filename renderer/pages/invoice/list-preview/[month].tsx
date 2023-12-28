@@ -120,11 +120,11 @@ export default configurePage({
   query: z.object({
     month: z.string(),
   }),
-  layout: ({ children }) => (
-    <Layout title="プレビュー" prev="/invoice">
+  layout: ({ children, query }) => {
+    return <Layout title="プレビュー" prev={`/invoice/list/${query?.month}`}>
       {children}
     </Layout>
-  ),
+  },
   page: ({ query }) => {
     const params = useMemo(() => {
       const date = dayjs(query.month);
