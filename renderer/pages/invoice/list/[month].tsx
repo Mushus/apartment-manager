@@ -71,7 +71,6 @@ type Props = {
 };
 
 const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave, onPrint, onPrintList }: Props) => {
-  console.log(tenants)
   const [checks, setChecks] = useState(defaultChecks);
   const getCheck = (id: string) => Boolean(checks[id]);
 
@@ -138,7 +137,6 @@ const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave
 
   const handleChangePrevMonth = () => {
     onChangeMonth(dayjs(month).subtract(1, 'month').format('YYYY-MM'));
-    console.log(month);
   };
 
   const handleChangeNextMonth = () => {
@@ -194,7 +192,9 @@ const InvoiceComponent = ({ tenants, defaultChecks, month, onChangeMonth, onSave
     e.preventDefault();
     const waterUsageNum = formToNum(waterUsage);
     if (waterChargePopoverTarget && waterUsageNum !== null) {
-      setInvoiceValue(waterChargePopoverTarget.index, 'waterCharge', () => String(waterUsageNum * 350));
+      const index = waterChargePopoverTarget.index;
+      const { waterCharge } = tenants[index];
+      setInvoiceValue(waterChargePopoverTarget.index, 'waterCharge', () => String(waterUsageNum * (waterCharge ?? 350)));
     }
     setWaterChargePopoverTarget(null);
   };
